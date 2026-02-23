@@ -6,8 +6,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --production
 
-COPY simple-server.js ./
+COPY simple-server.mjs ./
 
 EXPOSE 10000
 
-CMD ["node", "simple-server.js"]
+CMD ["node", "simple-server.mjs"]
