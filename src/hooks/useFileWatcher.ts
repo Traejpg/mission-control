@@ -24,7 +24,7 @@ interface FileWatcherState {
 }
 
 // Use environment variable for cloud deployment, fallback to localhost for local dev
-const WATCHER_URL = import.meta.env.VITE_WATCHER_URL || 'ws://127.0.0.1:18791/ws';
+const WATCHER_URL = import.meta.env.VITE_WATCHER_URL || 'wss://mission-control-v954.onrender.com/ws';
 
 export function useFileWatcher(): FileWatcherState & {
   refresh: () => void;
