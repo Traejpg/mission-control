@@ -100,7 +100,7 @@ export function useFileWatcher(): FileWatcherState & {
   // Handle incoming messages
   const handleMessage = useCallback((message: any) => {
     switch (message.type) {
-      case 'files':
+      case 'files': {
         const files = message.payload.files || [];
         // Extract tasks from all files
         const allTasks = files.flatMap((f: any) => f.tasks || []);
@@ -112,8 +112,9 @@ export function useFileWatcher(): FileWatcherState & {
         }));
         console.log('[FileWatcher] Files received:', files.length, 'Tasks extracted:', allTasks.length);
         break;
+      }
         
-      case 'memories':
+      case 'memories': {
         setState(prev => ({
           ...prev,
           memories: message.payload.memories || [],
@@ -121,33 +122,38 @@ export function useFileWatcher(): FileWatcherState & {
         }));
         console.log('[FileWatcher] Memories received:', (message.payload.memories || []).length);
         break;
+      }
         
       case 'file_add':
-      case 'file_change':
+      case 'file_change': {
         setState(prev => {
           const newFile = message.payload.file;
           const files = prev.files.filter(f => f.date !== newFile.date);
+          const updatedFiles = [newFile, ...files].sort((a, b) => b.date.localeCompare(a.date));
           return {
             ...prev,
-            files: [newFile, ...files].sort((a, b) => b.date.localeCompare(a.date)),
-            tasks: [...files, newFile].flatMap(f => f.tasks),
-            memories: [...files, newFile].flatMap(f => f.memories),
+            files: updatedFiles,
+            tasks: updatedFiles.flatMap(f => f.tasks || []),
+            memories: updatedFiles.flatMap(f => f.memories || []),
             lastUpdate: Date.now()
           };
         });
         break;
+      }
         
-      case 'file_delete':
+      case 'file_delete': {
         setState(prev => ({
           ...prev,
           files: prev.files.filter(f => f.date !== message.payload.date),
           lastUpdate: Date.now()
         }));
         break;
+      }
         
-      case 'write_complete':
+      case 'write_complete': {
         setState(prev => ({ ...prev, isWriting: false }));
         break;
+      }
     }
   }, []);
 
