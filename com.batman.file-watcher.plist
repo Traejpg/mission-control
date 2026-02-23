@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.batman.file-watcher</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/node-22/bin/node</string>
+        <string>/Users/assistattrae/.openclaw/workspace/mission-control/file-watcher-backend.cjs</string>
+    </array>
+    
+    <key>WorkingDirectory</key>
+    <string>/Users/assistattrae/.openclaw/workspace/mission-control</string>
+    
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/assistattrae</string>
+        <key>MEMORY_DIR</key>
+        <string>/Users/assistattrae/.openclaw/workspace/memory</string>
+    </dict>
+    
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <key>KeepAlive</key>
+    <true/>
+    
+    <key>StandardOutPath</key>
+    <string>/Users/assistattrae/.openclaw/logs/file-watcher.out.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/Users/assistattrae/.openclaw/logs/file-watcher.err.log</string>
+</dict>
+</plist>

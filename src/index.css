@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-dark-600;
+  }
+  
+  body {
+    @apply bg-dark-900 text-white font-sans;
+  }
+  
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-dark-800;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dark-600 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-dark-500;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-dark-800/80 backdrop-blur-md border border-dark-600/50;
+  }
+  
+  .card {
+    @apply bg-dark-800 rounded-xl border border-dark-600 p-4;
+  }
+  
+  .card-hover {
+    @apply card hover:border-brand-500/50 transition-all duration-200;
+  }
+  
+  .btn-primary {
+    @apply bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg font-medium transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-dark-700 hover:bg-dark-600 text-white px-4 py-2 rounded-lg font-medium transition-colors;
+  }
+  
+  .input {
+    @apply bg-dark-700 border border-dark-600 rounded-lg px-4 py-2 text-white placeholder-dark-500 focus:outline-none focus:border-brand-500;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-online {
+    @apply w-2 h-2 bg-green-500 rounded-full animate-pulse;
+  }
+  
+  .status-busy {
+    @apply w-2 h-2 bg-red-500 rounded-full;
+  }
+  
+  .status-idle {
+    @apply w-2 h-2 bg-yellow-500 rounded-full;
+  }
+  
+  .status-offline {
+    @apply w-2 h-2 bg-dark-500 rounded-full;
+  }
+  
+  /* Mobile Safe Area */
+  .safe-area-pb {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  
+  /* Touch Friendly */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Mobile Scroll */
+  .mobile-scroll {
+    @apply overflow-x-auto overflow-y-hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .mobile-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Prevent text selection on mobile */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}

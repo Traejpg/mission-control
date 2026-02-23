@@ -1,0 +1,22 @@
+# Railway Deployment Configuration
+# Deploys Unified Gateway + File Watcher to Railway.app
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "node unified-gateway.cjs"
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+[environments]
+production = true
+
+[variables]
+NODE_ENV = "production"
+GATEWAY_PORT = "${PORT}"
+GATEWAY_INTERNAL_PORT = "${PORT}"
+MEMORY_DIR = "/app/data/memory"
+CORS_ORIGIN = "*"

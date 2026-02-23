@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  unified-gateway:
+    build: .
+    ports:
+      - "18789:18789"
+    environment:
+      - NODE_ENV=production
+      - GATEWAY_PORT=18789
+      - MEMORY_DIR=/app/data/memory
+    volumes:
+      - ./memory:/app/data/memory
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:18789/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  file-watcher:
+    build: .
+    ports:
+      - "18791:18791"
+      - "18792:18792"
+    environment:
+      - NODE_ENV=production
+      - WATCHER_PORT=18791
+      - MEMORY_DIR=/app/data/memory
+    volumes:
+      - ./memory:/app/data/memory
+    restart: unless-stopped
+
+volumes:
+  memory-data:
