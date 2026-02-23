@@ -10,7 +10,6 @@ headers = []
 publish = "/Users/assistattrae/.openclaw/workspace/mission-control/dist"
 publishOrigin = "config"
 commandOrigin = "config"
-base = "/Users/assistattrae/.openclaw/workspace/mission-control"
 command = "npm run build"
 
 [build.environment]
