@@ -418,7 +418,7 @@ export default function Memory() {
             )}
           </div>
           <div className="text-right text-xs text-gray-500">
-            <p>Backend: wss://mission-control-v954.onrender.com/ws</p>
+            <p>Backend: wss://mission-control.railway.internal/ws</p>
             <p>Last update: {formatLastUpdate(lastUpdate)}</p>
           </div>
         </div>

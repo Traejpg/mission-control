@@ -23,8 +23,8 @@ interface FileWatcherState {
   selectedFile: string | null;
 }
 
-// Use environment variable with fallback to production Render backend
-const WATCHER_URL = import.meta.env.VITE_WATCHER_URL || 'wss://mission-control-v954.onrender.com/ws';
+// Use environment variable with fallback to production Railway backend
+const WATCHER_URL = import.meta.env.VITE_WATCHER_URL || 'wss://mission-control.railway.internal/ws';
 
 console.log('[FileWatcher] Connecting to:', WATCHER_URL);
 
