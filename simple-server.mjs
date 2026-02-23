@@ -102,15 +102,21 @@ wss.on('connection', (ws) => {
   
   console.log(`[WS] Client ${id} connected (${clients.size} total)`);
   
-  // Send current files
+  // Send current files (in format frontend expects)
   const files = Array.from(memoryStore.entries()).map(([date, data]) => ({
     id: date,
     date,
+    name: `${date}.md`,
     content: data.content,
-    lastModified: data.lastModified
+    lastModified: data.lastModified,
+    size: data.content.length,
+    tasks: [],
+    memories: []
   }));
   
-  ws.send(JSON.stringify({ type: 'memory', payload: { memories: files } }));
+  // Send both formats that frontend expects
+  ws.send(JSON.stringify({ type: 'files', payload: { files } }));
+  ws.send(JSON.stringify({ type: 'memories', payload: { memories: files } }));
   
   ws.on('message', (data) => {
     try {
@@ -131,9 +137,17 @@ wss.on('connection', (ws) => {
       
       if (msg.type === 'request' && msg.resource === 'memory') {
         const files = Array.from(memoryStore.entries()).map(([date, data]) => ({
-          id: date, date, content: data.content, lastModified: data.lastModified
+          id: date, date, name: `${date}.md`, content: data.content, lastModified: data.lastModified, size: data.content.length, tasks: [], memories: []
         }));
-        ws.send(JSON.stringify({ type: 'memory', payload: { memories: files } }));
+        ws.send(JSON.stringify({ type: 'files', payload: { files } }));
+        ws.send(JSON.stringify({ type: 'memories', payload: { memories: files } }));
+      }
+      
+      if (msg.type === 'request' && msg.resource === 'files') {
+        const files = Array.from(memoryStore.entries()).map(([date, data]) => ({
+          id: date, date, name: `${date}.md`, content: data.content, lastModified: data.lastModified, size: data.content.length, tasks: [], memories: []
+        }));
+        ws.send(JSON.stringify({ type: 'files', payload: { files } }));
       }
     } catch (err) {
       console.error('[WS] Error:', err);
