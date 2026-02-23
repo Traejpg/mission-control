@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Plus, Filter, MoreHorizontal, Calendar, User, Tag } from 'lucide-react';
+import { Plus, Filter, MoreHorizontal, Calendar, User, Tag, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { tasks, workflows } from '../data/store';
+import { workflows } from '../data/store';
+import { useFileWatcher } from '../hooks/useFileWatcher';
 import type { Task, WorkflowType } from '../types';
 
 const columns = [
@@ -19,6 +20,7 @@ const priorityColors = {
 };
 
 export default function TaskBoard() {
+  const { tasks, isConnected, refresh } = useFileWatcher();
   const [filterWorkflow, setFilterWorkflow] = useState<WorkflowType | 'all'>('all');
   const [filterAssignee, setFilterAssignee] = useState<'all' | 'tee' | 'robin'>('all');
 
@@ -36,13 +38,38 @@ export default function TaskBoard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Task Board</h1>
-          <p className="text-gray-400 mt-1">Manage all tasks across workflows</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">Task Board</h1>
+            <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+              isConnected
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+            }`}>
+              {isConnected ? (
+                <><Wifi className="w-3 h-3" /> LIVE</>
+              ) : (
+                <><WifiOff className="w-3 h-3" /> OFFLINE</>
+              )}
+            </span>
+          </div>
+          <p className="text-gray-400 mt-1">
+            {tasks.length} tasks from memory files
+            {!isConnected && ' • Connect to file watcher to sync'}
+          </p>
         </div>
-        <button className="btn-primary flex items-center gap-2">
-          <Plus className="w-5 h-5" />
-          New Task
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={refresh}
+            disabled={!isConnected}
+            className="p-2 hover:bg-dark-700 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-5 h-5 text-gray-400 ${!isConnected ? '' : 'hover:text-brand-400'}`} />
+          </button>
+          <button className="btn-primary flex items-center gap-2">
+            <Plus className="w-5 h-5" />
+            New Task
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

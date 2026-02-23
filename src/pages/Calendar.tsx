@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Clock, Repeat } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Repeat, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
-import { calendarEvents, workflows } from '../data/store';
+import { workflows } from '../data/store';
+import { useFileWatcher } from '../hooks/useFileWatcher';
 import type { CalendarEvent } from '../types';
 
 const eventTypeColors = {
@@ -12,16 +13,33 @@ const eventTypeColors = {
   cron: 'bg-green-500/20 text-green-400 border-green-500/30',
 };
 
+// Convert tasks to calendar events
+function tasksToEvents(tasks: any[]): CalendarEvent[] {
+  return tasks.map(task => ({
+    id: task.id,
+    title: task.title,
+    description: task.description || '',
+    startTime: task.createdAt || Date.now(),
+    endTime: (task.createdAt || Date.now()) + 3600000, // 1 hour duration
+    type: task.status === 'done' ? 'task' : task.priority === 'critical' ? 'deadline' : 'task',
+    workflow: task.workflow || 'personal',
+    recurring: false,
+  }));
+}
+
 export default function Calendar() {
+  const { tasks, isConnected, refresh } = useFileWatcher();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+
+  const calendarEvents = tasksToEvents(tasks);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   const getEventsForDate = (date: Date): CalendarEvent[] => {
-    return calendarEvents.filter(event => 
+    return calendarEvents.filter(event =>
       isSameDay(new Date(event.startTime), date)
     );
   };
@@ -33,11 +51,34 @@ export default function Calendar() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Calendar</h1>
-          <p className="text-gray-400 mt-1">Schedule, deadlines, and recurring tasks</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">Calendar</h1>
+            <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+              isConnected
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+            }`}>
+              {isConnected ? (
+                <><Wifi className="w-3 h-3" /> LIVE</>
+              ) : (
+                <><WifiOff className="w-3 h-3" /> OFFLINE</>
+              )}
+            </span>
+          </div>
+          <p className="text-gray-400 mt-1">
+            {calendarEvents.length} events from memory files
+            {!isConnected && ' • Connect to file watcher to sync'}
+          </p>
         </div>
         <div className="flex items-center gap-4">
-          <button 
+          <button
+            onClick={refresh}
+            disabled={!isConnected}
+            className="p-2 hover:bg-dark-700 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-5 h-5 text-gray-400 ${!isConnected ? '' : 'hover:text-brand-400'}`} />
+          </button>
+          <button
             onClick={() => setCurrentDate(subMonths(currentDate, 1))}
             className="p-2 hover:bg-dark-700 rounded-lg transition-colors"
           >
@@ -46,7 +87,7 @@ export default function Calendar() {
           <h2 className="text-xl font-bold min-w-[200px] text-center">
             {format(currentDate, 'MMMM yyyy')}
           </h2>
-          <button 
+          <button
             onClick={() => setCurrentDate(addMonths(currentDate, 1))}
             className="p-2 hover:bg-dark-700 rounded-lg transition-colors"
           >
