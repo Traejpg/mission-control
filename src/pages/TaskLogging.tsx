@@ -11,7 +11,6 @@ import {
   Plus,
   Trash2,
   Calendar,
-  ChevronRight,
   Copy,
   CheckSquare
 } from 'lucide-react';
@@ -67,13 +66,8 @@ const RECENT_TASKS: LoggedTask[] = [
   },
 ];
 
-// Mock memory files
-const MEMORY_FILES = [
-  { date: '2026-02-21', filename: '2026-02-21.md', entries: 12 },
-  { date: '2026-02-20', filename: '2026-02-20.md', entries: 8 },
-  { date: '2026-02-19', filename: '2026-02-19.md', entries: 15 },
-  { date: '2026-02-18', filename: '2026-02-18.md', entries: 6 },
-];
+// Memory files - loaded from props or context
+// REMOVED: Mock memory files - use /memory page for actual memory files
 
 export default function TaskLogging() {
   const [tasks, setTasks] = useState<LoggedTask[]>(RECENT_TASKS);
@@ -231,7 +225,7 @@ export default function TaskLogging() {
           </motion.div>
         </div>
 
-        {/* Memory Files Sidebar */}
+        {/* Quick Actions Sidebar */}
         <div className="space-y-4">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -241,26 +235,36 @@ export default function TaskLogging() {
           >
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <FileText className="w-6 h-6 text-brand-400" />
-              Memory Files
+              Quick Links
             </h2>
             
             <div className="space-y-2">
-              {MEMORY_FILES.map(file => (
-                <a
-                  key={file.filename}
-                  href={`/memory/${file.filename}`}
-                  className="flex items-center justify-between p-3 bg-dark-700/50 rounded-lg border border-dark-600 hover:border-brand-500/30 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <p className="font-medium">{file.date}</p>
-                      <p className="text-xs text-gray-400">{file.entries} entries</p>
-                    </div>
+              <a
+                href="/memory"
+                className="flex items-center justify-between p-3 bg-dark-700/50 rounded-lg border border-dark-600 hover:border-brand-500/30 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <div>
+                    <p className="font-medium">View Memory Files</p>
+                    <p className="text-xs text-gray-400">Browse all daily logs</p>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
-                </a>
-              ))}
+                </div>
+                <ExternalLink className="w-4 h-4 text-gray-400" />
+              </a>
+              <a
+                href="/tasks"
+                className="flex items-center justify-between p-3 bg-dark-700/50 rounded-lg border border-dark-600 hover:border-brand-500/30 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <CheckSquare className="w-4 h-4 text-gray-400" />
+                  <div>
+                    <p className="font-medium">Task Board</p>
+                    <p className="text-xs text-gray-400">Kanban view</p>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 text-gray-400" />
+              </a>
             </div>
           </motion.div>
 

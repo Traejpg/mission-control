@@ -1,4 +1,4 @@
-# Simple Dockerfile - pure in-memory storage
+# Simple Dockerfile - works with CommonJS
 FROM node:20-alpine
 
 WORKDIR /app
@@ -6,8 +6,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --production
 
-COPY simple-server.mjs ./
+COPY simple-server.js ./
 
 EXPOSE 10000
 
-CMD ["node", "simple-server.mjs"]
+CMD ["node", "simple-server.js"]
