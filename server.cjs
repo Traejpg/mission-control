@@ -156,15 +156,25 @@ const server = http.createServer((req, res) => {
 // WebSocket
 const wss = new WebSocket.Server({server, path: '/ws'});
 
+// Helper to get sorted files
+function getSortedFiles() {
+  const files = [];
+  for (const [date, data] of memoryStore) {
+    files.push(makeFile(date, data));
+  }
+  files.sort((a,b) => {
+    if (!a.date || !b.date) return 0;
+    return String(b.date).localeCompare(String(a.date));
+  });
+  return files;
+}
+
 wss.on('connection', (ws) => {
   console.log('[WS] Client connected');
   
-  // Send current state
+  // Send current state (sorted)
   try {
-    const files = [];
-    for (const [date, data] of memoryStore) {
-      files.push(makeFile(date, data));
-    }
+    const files = getSortedFiles();
     const allMemories = files.flatMap(f => f.memories || []);
     
     ws.send(JSON.stringify({type: 'files', payload: {files}}));
@@ -190,10 +200,7 @@ wss.on('connection', (ws) => {
       }
       
       if (msg.type === 'request') {
-        const files = [];
-        for (const [date, data] of memoryStore) {
-          files.push(makeFile(date, data));
-        }
+        const files = getSortedFiles();
         const allMemories = files.flatMap(f => f.memories || []);
         ws.send(JSON.stringify({type: 'files', payload: {files}}));
         ws.send(JSON.stringify({type: 'memories', payload: {memories: allMemories}}));
