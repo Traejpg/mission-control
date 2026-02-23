@@ -4,6 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  VITE_WATCHER_URL = "wss://mission-control-v954.onrender.com/ws"
+  VITE_GATEWAY_URL = "wss://mission-control-v954.onrender.com"
 
 [[redirects]]
   from = "/*"
