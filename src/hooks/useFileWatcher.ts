@@ -23,8 +23,8 @@ interface FileWatcherState {
   selectedFile: string | null;
 }
 
-// Use environment variable for cloud deployment, fallback to localhost for local dev
-const WATCHER_URL = import.meta.env.VITE_WATCHER_URL || 'wss://mission-control-v954.onrender.com/ws';
+// Hardcoded for production - Render backend
+const WATCHER_URL = 'wss://mission-control-v954.onrender.com/ws';
 
 console.log('[FileWatcher] Connecting to:', WATCHER_URL);
 
