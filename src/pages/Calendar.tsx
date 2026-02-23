@@ -23,7 +23,7 @@ function tasksToEvents(tasks: any[]): CalendarEvent[] {
     endTime: (task.createdAt || Date.now()) + 3600000, // 1 hour duration
     type: task.status === 'done' ? 'task' : task.priority === 'critical' ? 'deadline' : 'task',
     workflow: task.workflow || 'personal',
-    recurring: false,
+    recurring: undefined,
   }));
 }
 

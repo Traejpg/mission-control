@@ -23,8 +23,8 @@ interface FileWatcherState {
   selectedFile: string | null;
 }
 
-// Hardcoded for production - Render backend
-const WATCHER_URL = 'wss://mission-control-v954.onrender.com/ws';
+// Use environment variable with fallback to production Render backend
+const WATCHER_URL = import.meta.env.VITE_WATCHER_URL || 'wss://mission-control-v954.onrender.com/ws';
 
 console.log('[FileWatcher] Connecting to:', WATCHER_URL);
 
@@ -48,7 +48,7 @@ export function useFileWatcher(): FileWatcherState & {
 
   // Connect to file watcher
   useEffect(() => {
-    let reconnectTimer: NodeJS.Timeout;
+    let reconnectTimer: ReturnType<typeof setTimeout>;
     
     const connect = () => {
       console.log('[FileWatcher] Attempting connection...');
