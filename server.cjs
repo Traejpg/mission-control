@@ -1,4 +1,4 @@
-// Ultra-simple Render server - no parsing, just storage
+// Ultra-simple Render server - robust date handling
 const http = require('http');
 const WebSocket = require('ws');
 
@@ -11,7 +11,18 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-// Simple task parser (robust)
+// Safe date formatter
+function safeDate(dateStr) {
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return new Date().toISOString();
+    return d.toISOString();
+  } catch {
+    return new Date().toISOString();
+  }
+}
+
+// Simple task parser
 function parseTasks(content) {
   const tasks = [];
   const lines = content.split('\n');
@@ -32,7 +43,7 @@ function parseTasks(content) {
   return tasks;
 }
 
-// Simple memory parser (robust)
+// Simple memory parser
 function parseMemories(content, source) {
   const memories = [];
   const lines = content.split('\n');
@@ -50,7 +61,7 @@ function parseMemories(content, source) {
         id: `mem-${source}-${idx++}`,
         title: header[1],
         category: 'general',
-        date: new Date(source).toISOString(),
+        date: safeDate(source),
         tags: [],
         source
       };
@@ -66,7 +77,7 @@ function parseMemories(content, source) {
 function makeFile(date, data) {
   return {
     id: date,
-    date,
+    date: date,
     name: `${date}.md`,
     content: data.content,
     lastModified: data.lastModified,
@@ -101,7 +112,11 @@ const server = http.createServer((req, res) => {
       for (const [date, data] of memoryStore) {
         files.push(makeFile(date, data));
       }
-      files.sort((a,b) => b.date.localeCompare(a.date));
+      // Safe sort
+      files.sort((a,b) => {
+        if (!a.date || !b.date) return 0;
+        return String(b.date).localeCompare(String(a.date));
+      });
       res.writeHead(200, {'Content-Type': 'application/json'});
       res.end(JSON.stringify({files}));
     } catch (e) {
@@ -150,7 +165,7 @@ wss.on('connection', (ws) => {
     for (const [date, data] of memoryStore) {
       files.push(makeFile(date, data));
     }
-    const allMemories = files.flatMap(f => f.memories);
+    const allMemories = files.flatMap(f => f.memories || []);
     
     ws.send(JSON.stringify({type: 'files', payload: {files}}));
     ws.send(JSON.stringify({type: 'memories', payload: {memories: allMemories}}));
@@ -179,7 +194,7 @@ wss.on('connection', (ws) => {
         for (const [date, data] of memoryStore) {
           files.push(makeFile(date, data));
         }
-        const allMemories = files.flatMap(f => f.memories);
+        const allMemories = files.flatMap(f => f.memories || []);
         ws.send(JSON.stringify({type: 'files', payload: {files}}));
         ws.send(JSON.stringify({type: 'memories', payload: {memories: allMemories}}));
       }
