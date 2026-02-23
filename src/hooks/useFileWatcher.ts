@@ -101,19 +101,16 @@ export function useFileWatcher(): FileWatcherState & {
   const handleMessage = useCallback((message: any) => {
     switch (message.type) {
       case 'files':
+        const files = message.payload.files || [];
+        // Extract tasks from all files
+        const allTasks = files.flatMap((f: any) => f.tasks || []);
         setState(prev => ({
           ...prev,
-          files: message.payload.files || [],
+          files: files,
+          tasks: allTasks,
           lastUpdate: Date.now()
         }));
-        break;
-        
-      case 'tasks':
-        setState(prev => ({
-          ...prev,
-          tasks: message.payload.tasks || [],
-          lastUpdate: Date.now()
-        }));
+        console.log('[FileWatcher] Files received:', files.length, 'Tasks extracted:', allTasks.length);
         break;
         
       case 'memories':
@@ -122,6 +119,7 @@ export function useFileWatcher(): FileWatcherState & {
           memories: message.payload.memories || [],
           lastUpdate: Date.now()
         }));
+        console.log('[FileWatcher] Memories received:', (message.payload.memories || []).length);
         break;
         
       case 'file_add':
