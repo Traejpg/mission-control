@@ -163,7 +163,7 @@ export default function TaskBoard() {
                     </div>
 
                     {/* Tags */}
-                    {task.tags.length > 0 && (
+                    {task.tags && task.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-3">
                         {task.tags.slice(0, 3).map((tag) => (
                           <span key={tag} className="badge bg-dark-700 text-gray-400 text-xs">
