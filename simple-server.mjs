@@ -4,7 +4,7 @@
  */
 
 import http from 'http';
-import WebSocket from 'ws';
+import { WebSocketServer } from 'ws';
 import { parse } from 'url';
 
 const PORT = parseInt(process.env.PORT || '10000');
@@ -94,7 +94,7 @@ const server = http.createServer((req, res) => {
 });
 
 // WebSocket
-const wss = new WebSocket.Server({ server, path: '/ws' });
+const wss = new WebSocketServer({ server, path: '/ws' });
 
 wss.on('connection', (ws) => {
   const id = Date.now().toString(36);
@@ -149,7 +149,7 @@ wss.on('connection', (ws) => {
 function broadcast(msg) {
   const data = JSON.stringify(msg);
   clients.forEach((ws) => {
-    if (ws.readyState === WebSocket.OPEN) ws.send(data);
+    if (ws.readyState === 1) ws.send(data); // 1 = OPEN
   });
 }
 
