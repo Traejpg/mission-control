@@ -73,14 +73,15 @@ export default function Team() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header with WebSocket Status */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header with WebSocket Status - Mobile Optimized */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Users className="w-8 h-8 text-brand-400" />
-              Team Structure
+            <h1 className="responsive-h1 flex items-center gap-2">
+              <Users className="w-6 h-6 sm:w-8 sm:h-8 text-brand-400" />
+              <span className="hidden sm:inline">Team Structure</span>
+              <span className="sm:hidden">Team</span>
             </h1>
             <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
               isConnected 
@@ -88,17 +89,17 @@ export default function Team() {
                 : 'bg-red-500/20 text-red-400 border border-red-500/30'
             }`}>
               {isConnected ? (
-                <><Wifi className="w-3 h-3" /> LIVE</>
+                <><Wifi className="w-3 h-3" /> <span className="hidden sm:inline">LIVE</span></>
               ) : (
-                <><WifiOff className="w-3 h-3" /> OFFLINE</>
+                <><WifiOff className="w-3 h-3" /> <span className="hidden sm:inline">OFFLINE</span></>
               )}
             </span>
           </div>
-          <p className="text-gray-400 mt-1">
-            Subagents organized by role and responsibility
+          <p className="text-gray-400 mt-1 text-sm">
+            Subagents organized by role
             {sessions.length > 0 && (
               <span className="ml-2 text-green-400">
-                • {sessions.length} active session{sessions.length !== 1 ? 's' : ''}
+                • {sessions.length} active
               </span>
             )}
           </p>
@@ -107,81 +108,84 @@ export default function Team() {
           {!isConnected && (
             <button 
               onClick={() => webSocketService.connect()}
-              className="btn-secondary text-sm"
+              className="btn-secondary text-sm touch-target"
             >
               Reconnect
             </button>
           )}
-          <button className="btn-primary flex items-center gap-2">
+          <button className="btn-primary flex items-center gap-2 touch-target">
             <Plus className="w-5 h-5" />
-            Add Agent
+            <span className="hidden sm:inline">Add Agent</span>
+            <span className="sm:hidden">Add</span>
           </button>
         </div>
       </div>
 
-      {/* Live Team Overview Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      {/* Live Team Overview Stats - Responsive Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <div className="card">
-          <p className="text-gray-400 text-sm">Total Agents</p>
-          <p className="text-3xl font-bold">{liveTeam.length}</p>
+          <p className="text-gray-400 text-xs lg:text-sm">Total Agents</p>
+          <p className="text-2xl lg:text-3xl font-bold">{liveTeam.length}</p>
         </div>
         <div className="card border-green-500/20">
-          <p className="text-gray-400 text-sm flex items-center gap-1">
-            Online Now
+          <p className="text-gray-400 text-xs lg:text-sm flex items-center gap-1">
+            Online
             {isConnected && <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />}
           </p>
-          <p className="text-3xl font-bold text-green-400">
+          <p className="text-2xl lg:text-3xl font-bold text-green-400">
             {onlineCount}
           </p>
         </div>
         <div className="card">
-          <p className="text-gray-400 text-sm">Active Tasks</p>
-          <p className="text-3xl font-bold text-brand-400">
+          <p className="text-gray-400 text-xs lg:text-sm">Active Tasks</p>
+          <p className="text-2xl lg:text-3xl font-bold text-brand-400">
             {activeTaskCount}
           </p>
         </div>
         <div className="card">
-          <p className="text-gray-400 text-sm">Avg Workload</p>
-          <p className="text-3xl font-bold text-yellow-400">
+          <p className="text-gray-400 text-xs lg:text-sm">Avg Workload</p>
+          <p className="text-2xl lg:text-3xl font-bold text-yellow-400">
             {avgWorkload}%
           </p>
         </div>
       </div>
 
-      {/* Live Sessions */}
+      {/* Live Sessions - Mobile Scrollable */}
       {sessions.length > 0 && (
         <div className="card border-brand-500/30">
-          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-brand-400" />
+          <h3 className="font-bold text-base lg:text-lg mb-4 flex items-center gap-2">
+            <Activity className="w-4 h-4 lg:w-5 lg:h-5 text-brand-400" />
             Live Sessions ({sessions.length})
             {isConnected && (
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             )}
           </h3>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-            {sessions.map((session) => (
-              <div 
-                key={session.key}
-                className="p-3 bg-dark-700/50 rounded-lg flex items-center gap-3 hover:bg-dark-700 transition-colors"
-              >
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{session.displayName}</p>
-                  <p className="text-xs text-gray-400 truncate">
-                    {session.label || session.kind}
-                  </p>
+          <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+            <div className="flex lg:grid lg:grid-cols-3 gap-3 min-w-[600px] lg:min-w-0">
+              {sessions.map((session) => (
+                <div 
+                  key={session.key}
+                  className="p-3 bg-dark-700/50 rounded-lg flex items-center gap-3 hover:bg-dark-700 transition-colors flex-shrink-0 w-[200px] lg:w-auto"
+                >
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{session.displayName}</p>
+                    <p className="text-xs text-gray-400 truncate">
+                      {session.label || session.kind}
+                    </p>
+                  </div>
+                  <span className="text-xs text-gray-500 flex-shrink-0">
+                    {new Date(session.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-500">
-                  {new Date(session.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Organization Chart with Live Status */}
-      <div className="space-y-8">
+      {/* Organization Chart with Live Status - Responsive */}
+      <div className="space-y-6 lg:space-y-8">
         {Object.entries(roles).map(([roleName, memberIds], roleIndex) => (
           <motion.div
             key={roleName}
@@ -189,11 +193,11 @@ export default function Team() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: roleIndex * 0.1 }}
           >
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <div className="w-8 h-0.5 bg-brand-500"></div>
+            <h3 className="text-base lg:text-lg font-bold mb-4 flex items-center gap-2">
+              <div className="w-6 lg:w-8 h-0.5 bg-brand-500"></div>
               {roleName}
             </h3>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
               {memberIds.map((id) => {
                 const member = liveTeam.find(m => m.id === id);
                 if (!member) return null;
@@ -206,31 +210,31 @@ export default function Team() {
                   >
                     {/* Header */}
                     <div className="flex items-start justify-between mb-3">
-                      <div className="w-12 h-12 bg-dark-700 rounded-full flex items-center justify-center text-2xl">
+                      <div className="w-10 h-10 lg:w-12 lg:h-12 bg-dark-700 rounded-full flex items-center justify-center text-xl lg:text-2xl">
                         {member.avatar}
                       </div>
                       <div className="flex items-center gap-1">
                         <span title={member.status}>{statusIcons[member.status]}</span>
-                        <button className="p-1 hover:bg-dark-700 rounded">
+                        <button className="p-2 hover:bg-dark-700 rounded touch-target" aria-label="Settings">
                           <Settings className="w-4 h-4 text-gray-400" />
                         </button>
                       </div>
                     </div>
 
                     {/* Info */}
-                    <h4 className="font-bold">{member.name}</h4>
-                    <p className="text-sm text-gray-400 mb-3">{member.role}</p>
+                    <h4 className="font-bold text-sm lg:text-base">{member.name}</h4>
+                    <p className="text-xs lg:text-sm text-gray-400 mb-3">{member.role}</p>
 
                     {/* Skills */}
                     <div className="flex flex-wrap gap-1 mb-3">
-                      {member.skills.slice(0, 3).map((skill) => (
+                      {member.skills.slice(0, 2).map((skill) => (
                         <span key={skill} className="badge bg-dark-700 text-gray-400 text-xs">
                           {skill}
                         </span>
                       ))}
-                      {member.skills.length > 3 && (
+                      {member.skills.length > 2 && (
                         <span className="badge bg-dark-700 text-gray-400 text-xs">
-                          +{member.skills.length - 3}
+                          +{member.skills.length - 2}
                         </span>
                       )}
                     </div>
@@ -239,7 +243,7 @@ export default function Team() {
                     {member.currentTask ? (
                       <div className="p-2 bg-green-500/10 rounded-lg border border-green-500/20">
                         <p className="text-xs text-gray-400">Current Task</p>
-                        <p className="text-sm font-medium truncate">{member.currentTask}</p>
+                        <p className="text-xs lg:text-sm font-medium truncate">{member.currentTask}</p>
                       </div>
                     ) : (
                       <div className="p-2 bg-dark-700 rounded-lg">
@@ -268,7 +272,7 @@ export default function Team() {
 
                     {/* Live Last Active */}
                     <p className="text-xs text-gray-500 mt-3">
-                      Last active: {member.lastActive.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      Last: {member.lastActive.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </motion.div>
                 );
@@ -278,43 +282,43 @@ export default function Team() {
         ))}
       </div>
 
-      {/* Live Agent Directory */}
-      <div className="card mt-8">
-        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-brand-400" />
+      {/* Live Agent Directory - Table with Horizontal Scroll on Mobile */}
+      <div className="card mt-6 lg:mt-8">
+        <h3 className="font-bold text-base lg:text-lg mb-4 flex items-center gap-2">
+          <Activity className="w-4 h-4 lg:w-5 lg:h-5 text-brand-400" />
           Live Agent Directory
           {isConnected && (
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
           )}
         </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-4 px-4 lg:mx-0 lg:px-0">
+          <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-dark-600">
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Agent</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Role</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Status</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Current Task</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Workload</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Actions</th>
+                <th className="text-left py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-400">Agent</th>
+                <th className="text-left py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-400">Role</th>
+                <th className="text-left py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-400">Status</th>
+                <th className="text-left py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-400 hidden sm:table-cell">Current Task</th>
+                <th className="text-left py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-400">Workload</th>
+                <th className="text-left py-3 px-2 lg:px-4 text-xs lg:text-sm font-medium text-gray-400">Actions</th>
               </tr>
             </thead>
             <tbody>
               {liveTeam.map((member) => (
                 <tr key={member.id} className="border-b border-dark-600/50 hover:bg-dark-700/50">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{member.avatar}</span>
+                  <td className="py-3 px-2 lg:px-4">
+                    <div className="flex items-center gap-2 lg:gap-3">
+                      <span className="text-lg lg:text-xl">{member.avatar}</span>
                       <div>
-                        <span className="font-medium">{member.name}</span>
+                        <span className="font-medium text-sm">{member.name}</span>
                         {member.status === 'busy' && (
                           <span className="ml-2 w-2 h-2 bg-green-400 rounded-full inline-block animate-pulse" />
                         )}
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-400">{member.role}</td>
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-2 lg:px-4 text-xs lg:text-sm text-gray-400">{member.role}</td>
+                  <td className="py-3 px-2 lg:px-4">
                     <span className={`badge ${
                       member.status === 'busy' ? 'bg-red-500/20 text-red-400' :
                       'bg-yellow-500/20 text-yellow-400'
@@ -322,12 +326,12 @@ export default function Team() {
                       {member.status}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-sm max-w-xs truncate">
+                  <td className="py-3 px-2 lg:px-4 text-xs lg:text-sm max-w-[150px] truncate hidden sm:table-cell">
                     {member.currentTask || '—'}
                   </td>
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-2 lg:px-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-20 h-1.5 bg-dark-700 rounded-full overflow-hidden">
+                      <div className="w-12 lg:w-20 h-1.5 bg-dark-700 rounded-full overflow-hidden">
                         <div 
                           className={`h-full rounded-full transition-all ${
                             member.workload > 80 ? 'bg-red-500' : 
@@ -336,11 +340,11 @@ export default function Team() {
                           style={{ width: `${member.workload}%` }}
                         />
                       </div>
-                      <span className="text-sm">{member.workload}%</span>
+                      <span className="text-xs lg:text-sm">{member.workload}%</span>
                     </div>
                   </td>
-                  <td className="py-3 px-4">
-                    <button className="p-2 hover:bg-dark-700 rounded-lg transition-colors">
+                  <td className="py-3 px-2 lg:px-4">
+                    <button className="p-2 hover:bg-dark-700 rounded-lg transition-colors touch-target" aria-label="Message">
                       <Mail className="w-4 h-4 text-gray-400" />
                     </button>
                   </td>
@@ -352,33 +356,33 @@ export default function Team() {
       </div>
 
       {/* Connection Status Footer */}
-      <div className={`p-4 rounded-lg border ${
+      <div className={`p-3 lg:p-4 rounded-lg border ${
         isConnected 
           ? 'bg-green-500/10 border-green-500/30' 
           : 'bg-red-500/10 border-red-500/30'
       }`}>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-3">
             {isConnected ? (
               <>
-                <Wifi className="w-5 h-5 text-green-400" />
+                <Wifi className="w-5 h-5 text-green-400 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-green-400">WebSocket Connected</p>
-                  <p className="text-sm text-gray-400">Receiving real-time updates from Gateway</p>
+                  <p className="font-medium text-green-400 text-sm">WebSocket Connected</p>
+                  <p className="text-xs text-gray-400">Real-time updates active</p>
                 </div>
               </>
             ) : (
               <>
-                <WifiOff className="w-5 h-5 text-red-400" />
+                <WifiOff className="w-5 h-5 text-red-400 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-red-400">WebSocket Disconnected</p>
-                  <p className="text-sm text-gray-400">Attempting to reconnect to Gateway...</p>
+                  <p className="font-medium text-red-400 text-sm">WebSocket Disconnected</p>
+                  <p className="text-xs text-gray-400">Attempting to reconnect...</p>
                 </div>
               </>
             )}
           </div>
-          <div className="text-right text-xs text-gray-500">
-            <p>Gateway: {import.meta.env.VITE_GATEWAY_URL || 'ws://127.0.0.1:18789'}</p>
+          <div className="text-left sm:text-right text-xs text-gray-500">
+            <p className="hidden sm:block">{import.meta.env.VITE_GATEWAY_URL || 'ws://127.0.0.1:18789'}</p>
             <p>Sessions: {sessions.length}</p>
           </div>
         </div>

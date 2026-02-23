@@ -16,7 +16,10 @@ import {
   Plus,
   CheckCircle2,
   XCircle,
-  MoreHorizontal
+  MoreHorizontal,
+  Wifi,
+  WifiOff,
+  RefreshCw
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { 
@@ -100,21 +103,21 @@ const PnLCard = ({ title, value, percent, icon: Icon, color }: any) => {
       animate={{ opacity: 1, y: 0 }}
       className="card"
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-${color}-500/20`}>
-          <Icon className={`w-5 h-5 text-${color}-400`} />
+      <div className="flex items-center justify-between mb-2">
+        <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg flex items-center justify-center bg-${color}-500/20`}>
+          <Icon className={`w-4 h-4 lg:w-5 lg:h-5 text-${color}-400`} />
         </div>
         {isPositive ? (
-          <ArrowUpRight className="w-5 h-5 text-green-400" />
+          <ArrowUpRight className="w-4 h-4 lg:w-5 lg:h-5 text-green-400" />
         ) : (
-          <ArrowDownRight className="w-5 h-5 text-red-400" />
+          <ArrowDownRight className="w-4 h-4 lg:w-5 lg:h-5 text-red-400" />
         )}
       </div>
-      <p className="text-gray-400 text-sm">{title}</p>
-      <p className={`text-2xl font-bold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+      <p className="text-gray-400 text-xs lg:text-sm">{title}</p>
+      <p className={`text-xl lg:text-2xl font-bold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
         {formatCurrency(value)}
       </p>
-      <p className={`text-sm ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+      <p className={`text-xs lg:text-sm ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
         {formatPercent(percent)}
       </p>
     </motion.div>
@@ -132,26 +135,26 @@ const PositionCard = ({ position }: { position: Position }) => {
       className="card-hover group"
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{getMarketIcon(position.market)}</span>
+        <div className="flex items-center gap-2 lg:gap-3">
+          <span className="text-xl lg:text-2xl">{getMarketIcon(position.market)}</span>
           <div>
-            <h4 className="font-bold">{position.symbol}</h4>
-            <p className="text-xs text-gray-400 truncate max-w-[150px]">{position.name}</p>
+            <h4 className="font-bold text-sm lg:text-base">{position.symbol}</h4>
+            <p className="text-xs text-gray-400 truncate max-w-[100px] lg:max-w-[150px]">{position.name}</p>
           </div>
         </div>
-        <span className={`badge ${position.status === 'open' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+        <span className={`badge text-xs ${position.status === 'open' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
           {position.status}
         </span>
       </div>
       
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-2 gap-2 lg:gap-3 mb-3">
         <div>
           <p className="text-xs text-gray-400">Entry</p>
-          <p className="font-medium">{formatCurrency(position.entryPrice)}</p>
+          <p className="font-medium text-sm">{formatCurrency(position.entryPrice)}</p>
         </div>
         <div>
           <p className="text-xs text-gray-400">Current</p>
-          <p className="font-medium">{formatCurrency(position.currentPrice)}</p>
+          <p className="font-medium text-sm">{formatCurrency(position.currentPrice)}</p>
         </div>
       </div>
       
@@ -160,13 +163,13 @@ const PositionCard = ({ position }: { position: Position }) => {
           <span className="text-xs text-gray-400">{position.quantity} shares</span>
         </div>
         <div className={`text-right ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-          <p className="font-bold">{formatCurrency(position.pnl)}</p>
+          <p className="font-bold text-sm">{formatCurrency(position.pnl)}</p>
           <p className="text-xs">{formatPercent(position.pnlPercent)}</p>
         </div>
       </div>
       
       {(position.stopLoss || position.takeProfit) && (
-        <div className="mt-3 pt-3 border-t border-dark-600 flex gap-3 text-xs">
+        <div className="mt-3 pt-3 border-t border-dark-600 flex gap-2 lg:gap-3 text-xs">
           {position.stopLoss && (
             <span className="text-red-400">SL: {formatCurrency(position.stopLoss)}</span>
           )}
@@ -183,16 +186,16 @@ const MarketTicker = ({ data }: { data: typeof marketData[0] }) => {
   const isPositive = data.change >= 0;
   
   return (
-    <div className="flex items-center justify-between p-3 bg-dark-700/50 rounded-lg hover:bg-dark-700 transition-colors">
-      <div className="flex items-center gap-3">
-        <span className="text-xl">{getMarketIcon(data.market)}</span>
+    <div className="flex items-center justify-between p-2 lg:p-3 bg-dark-700/50 rounded-lg hover:bg-dark-700 transition-colors">
+      <div className="flex items-center gap-2 lg:gap-3">
+        <span className="text-lg lg:text-xl">{getMarketIcon(data.market)}</span>
         <div>
-          <p className="font-medium">{data.symbol}</p>
-          <p className="text-xs text-gray-400">{data.name}</p>
+          <p className="font-medium text-sm">{data.symbol}</p>
+          <p className="text-xs text-gray-400 hidden sm:block">{data.name}</p>
         </div>
       </div>
       <div className="text-right">
-        <p className="font-medium">{formatCurrency(data.price)}</p>
+        <p className="font-medium text-sm">{formatCurrency(data.price)}</p>
         <p className={`text-xs flex items-center gap-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
           {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
           {formatPercent(data.changePercent)}
@@ -207,25 +210,25 @@ const SignalCard = ({ signal }: { signal: typeof tradingSignals[0] }) => {
     <motion.div 
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className={`p-4 rounded-lg border ${getSignalColor(signal.type, signal.strength)}`}
+      className={`p-3 lg:p-4 rounded-lg border ${getSignalColor(signal.type, signal.strength)}`}
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xl">{getMarketIcon(signal.market)}</span>
-          <span className="font-bold">{signal.symbol}</span>
+          <span className="text-lg lg:text-xl">{getMarketIcon(signal.market)}</span>
+          <span className="font-bold text-sm lg:text-base">{signal.symbol}</span>
         </div>
         <span className="text-xs uppercase font-medium">{signal.strength}</span>
       </div>
       
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg font-bold capitalize">{signal.type}</span>
-        <span className="text-sm">@ {formatCurrency(signal.price)}</span>
+        <span className="text-base lg:text-lg font-bold capitalize">{signal.type}</span>
+        <span className="text-xs lg:text-sm">@ {formatCurrency(signal.price)}</span>
       </div>
       
-      <p className="text-sm opacity-80 mb-3">{signal.reasoning}</p>
+      <p className="text-xs lg:text-sm opacity-80 mb-3 line-clamp-2">{signal.reasoning}</p>
       
       {(signal.targetPrice || signal.stopLoss) && (
-        <div className="flex gap-4 text-xs mb-3">
+        <div className="flex flex-wrap gap-2 lg:gap-4 text-xs mb-3">
           {signal.targetPrice && (
             <span className="text-green-400">🎯 Target: {formatCurrency(signal.targetPrice)}</span>
           )}
@@ -236,12 +239,12 @@ const SignalCard = ({ signal }: { signal: typeof tradingSignals[0] }) => {
       )}
       
       <div className="flex items-center justify-between pt-2 border-t border-current border-opacity-20">
-        <span className="text-xs opacity-60">{signal.source}</span>
-        <div className="flex gap-2">
-          <button className="p-1 hover:bg-white/10 rounded">
+        <span className="text-xs opacity-60 truncate max-w-[100px]">{signal.source}</span>
+        <div className="flex gap-1 lg:gap-2">
+          <button className="p-2 hover:bg-white/10 rounded touch-target" aria-label="Accept">
             <CheckCircle2 className="w-4 h-4" />
           </button>
-          <button className="p-1 hover:bg-white/10 rounded">
+          <button className="p-2 hover:bg-white/10 rounded touch-target" aria-label="Reject">
             <XCircle className="w-4 h-4" />
           </button>
         </div>
@@ -260,25 +263,25 @@ const DecisionLog = ({ decision }: { decision: typeof tradeDecisions[0] }) => {
   };
   
   return (
-    <div className="flex items-start gap-3 p-3 bg-dark-700/30 rounded-lg">
-      <div className={`w-2 h-2 rounded-full mt-2 ${decision.outcome === 'profit' ? 'bg-green-400' : decision.outcome === 'loss' ? 'bg-red-400' : 'bg-yellow-400'}`} />
-      <div className="flex-1">
+    <div className="flex items-start gap-3 p-2 lg:p-3 bg-dark-700/30 rounded-lg">
+      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${decision.outcome === 'profit' ? 'bg-green-400' : decision.outcome === 'loss' ? 'bg-red-400' : 'bg-yellow-400'}`} />
+      <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
-          <span className="font-medium">{decision.symbol}</span>
-          <span className={`text-sm ${decisionColors[decision.decision]}`}>
+          <span className="font-medium text-sm">{decision.symbol}</span>
+          <span className={`text-xs ${decisionColors[decision.decision]}`}>
             {decision.decision.replace('_', ' ')}
           </span>
         </div>
-        <p className="text-sm text-gray-400 mb-2">{decision.reasoning}</p>
+        <p className="text-xs lg:text-sm text-gray-400 mb-2 line-clamp-2">{decision.reasoning}</p>
         <div className="flex flex-wrap gap-1 mb-2">
-          {decision.factors.map(factor => (
+          {decision.factors.slice(0, 2).map(factor => (
             <span key={factor} className="text-xs px-2 py-0.5 bg-dark-600 rounded">
               {factor.replace('-', ' ')}
             </span>
           ))}
         </div>
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>{new Date(decision.timestamp).toLocaleString()}</span>
+          <span>{new Date(decision.timestamp).toLocaleDateString()}</span>
           {decision.pnl !== undefined && (
             <span className={decision.pnl >= 0 ? 'text-green-400' : 'text-red-400'}>
               {formatCurrency(decision.pnl)}
@@ -309,37 +312,36 @@ export default function Trading() {
   const closedPositions = positions.filter(p => p.status === 'closed');
   
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <TrendingUp className="w-8 h-8 text-green-400" />
+          <h1 className="responsive-h1 flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
             Trading Bot
           </h1>
-          <p className="text-gray-400 mt-1">Multi-market trading dashboard</p>
+          <p className="text-gray-400 mt-1 text-sm">Multi-market trading dashboard</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="glass px-4 py-2 rounded-lg flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <div className="glass px-3 lg:px-4 py-2 rounded-lg flex items-center gap-2">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-sm">Live Data</span>
+            <span className="text-xs lg:text-sm">Live</span>
           </div>
-          <button 
-            className="btn-primary flex items-center gap-2"
-          >
+          <button className="btn-primary flex items-center gap-2 touch-target">
             <Plus className="w-5 h-5" />
-            New Position
+            <span className="hidden sm:inline">New Position</span>
+            <span className="sm:hidden">New</span>
           </button>
         </div>
       </div>
       
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-dark-600">
+      {/* Navigation Tabs - Scrollable on Mobile */}
+      <div className="flex items-center gap-1 border-b border-dark-600 overflow-x-auto scrollbar-hide">
         {['dashboard', 'positions', 'signals', 'history'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
-            className={`px-4 py-2 font-medium capitalize transition-colors border-b-2 -mb-px ${
+            className={`px-3 lg:px-4 py-2 font-medium capitalize transition-colors border-b-2 -mb-px text-sm lg:text-base whitespace-nowrap ${
               activeTab === tab 
                 ? 'text-brand-400 border-brand-400' 
                 : 'text-gray-400 border-transparent hover:text-white'
@@ -352,14 +354,14 @@ export default function Trading() {
       
       {/* Dashboard Tab */}
       {activeTab === 'dashboard' && (
-        <div className="space-y-6">
-          {/* P&L Summary Cards */}
+        <div className="space-y-4 lg:space-y-6">
+          {/* P&L Summary Cards - Responsive Grid */}
           <div>
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-green-400" />
+            <h2 className="text-base lg:text-lg font-bold mb-3 lg:mb-4 flex items-center gap-2">
+              <DollarSign className="w-4 h-4 lg:w-5 lg:h-5 text-green-400" />
               P&L Summary
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
               <PnLCard 
                 title="Total P&L" 
                 value={pnlSummary.totalPnl} 
@@ -392,43 +394,43 @@ export default function Trading() {
           </div>
           
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             <div className="card">
-              <p className="text-gray-400 text-sm">Win Rate</p>
-              <p className="text-2xl font-bold text-brand-400">{pnlSummary.winRate.toFixed(1)}%</p>
+              <p className="text-gray-400 text-xs lg:text-sm">Win Rate</p>
+              <p className="text-2xl lg:text-3xl font-bold text-brand-400">{pnlSummary.winRate.toFixed(1)}%</p>
               <p className="text-xs text-gray-500">{pnlSummary.winningTrades}W / {pnlSummary.losingTrades}L</p>
             </div>
             <div className="card">
-              <p className="text-gray-400 text-sm">Avg Win</p>
-              <p className="text-2xl font-bold text-green-400">{formatCurrency(pnlSummary.avgWin)}</p>
+              <p className="text-gray-400 text-xs lg:text-sm">Avg Win</p>
+              <p className="text-2xl lg:text-3xl font-bold text-green-400">{formatCurrency(pnlSummary.avgWin)}</p>
             </div>
             <div className="card">
-              <p className="text-gray-400 text-sm">Avg Loss</p>
-              <p className="text-2xl font-bold text-red-400">{formatCurrency(pnlSummary.avgLoss)}</p>
+              <p className="text-gray-400 text-xs lg:text-sm">Avg Loss</p>
+              <p className="text-2xl lg:text-3xl font-bold text-red-400">{formatCurrency(pnlSummary.avgLoss)}</p>
             </div>
             <div className="card">
-              <p className="text-gray-400 text-sm">Profit Factor</p>
-              <p className="text-2xl font-bold text-brand-400">{pnlSummary.profitFactor.toFixed(2)}</p>
+              <p className="text-gray-400 text-xs lg:text-sm">Profit Factor</p>
+              <p className="text-2xl lg:text-3xl font-bold text-brand-400">{pnlSummary.profitFactor.toFixed(2)}</p>
             </div>
           </div>
           
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Active Positions */}
             <div className="lg:col-span-2 space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  <PieChart className="w-5 h-5 text-brand-400" />
+                <h2 className="text-base lg:text-lg font-bold flex items-center gap-2">
+                  <PieChart className="w-4 h-4 lg:w-5 lg:h-5 text-brand-400" />
                   Active Positions ({openPositions.length})
                 </h2>
                 <button 
                   onClick={() => setActiveTab('positions')}
-                  className="text-sm text-brand-400 hover:underline"
+                  className="text-xs lg:text-sm text-brand-400 hover:underline"
                 >
                   View All
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
                 {openPositions.slice(0, 4).map(position => (
                   <PositionCard key={position.id} position={position} />
                 ))}
@@ -436,11 +438,11 @@ export default function Trading() {
             </div>
             
             {/* Right Column */}
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               {/* Market Ticker */}
               <div className="card">
-                <h3 className="font-bold mb-4 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-brand-400" />
+                <h3 className="font-bold mb-3 lg:mb-4 flex items-center gap-2 text-sm lg:text-base">
+                  <Activity className="w-4 h-4 lg:w-5 lg:h-5 text-brand-400" />
                   Market Watch
                 </h3>
                 <div className="space-y-2">
@@ -452,8 +454,8 @@ export default function Trading() {
               
               {/* Alerts */}
               <div className="card">
-                <h3 className="font-bold mb-4 flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-yellow-400" />
+                <h3 className="font-bold mb-3 lg:mb-4 flex items-center gap-2 text-sm lg:text-base">
+                  <Bell className="w-4 h-4 lg:w-5 lg:h-5 text-yellow-400" />
                   Alerts ({alerts.length})
                 </h3>
                 <div className="space-y-2">
@@ -472,11 +474,11 @@ export default function Trading() {
           
           {/* Active Signals */}
           <div>
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Target className="w-5 h-5 text-green-400" />
+            <h2 className="text-base lg:text-lg font-bold mb-3 lg:mb-4 flex items-center gap-2">
+              <Target className="w-4 h-4 lg:w-5 lg:h-5 text-green-400" />
               Active Signals
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
               {tradingSignals.map(signal => (
                 <SignalCard key={signal.id} signal={signal} />
               ))}
@@ -487,17 +489,17 @@ export default function Trading() {
       
       {/* Positions Tab */}
       {activeTab === 'positions' && (
-        <div className="space-y-6">
-          {/* Filters */}
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
+        <div className="space-y-4 lg:space-y-6">
+          {/* Filters - Mobile Scrollable */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Filter className="w-4 h-4 text-gray-400" />
               <span className="text-sm text-gray-400">Filter:</span>
             </div>
             <select 
               value={filterMarket}
               onChange={(e) => setFilterMarket(e.target.value as MarketType | 'all')}
-              className="input text-sm py-1.5"
+              className="input text-sm py-2 flex-shrink-0 min-w-[130px]"
             >
               <option value="all">All Markets</option>
               <option value="stock">Stocks</option>
@@ -508,7 +510,7 @@ export default function Trading() {
             <select 
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as 'all' | 'open' | 'closed')}
-              className="input text-sm py-1.5"
+              className="input text-sm py-2 flex-shrink-0 min-w-[120px]"
             >
               <option value="all">All Status</option>
               <option value="open">Open</option>
@@ -516,16 +518,16 @@ export default function Trading() {
             </select>
           </div>
           
-          {/* Positions Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          {/* Positions Table - Horizontal Scroll on Mobile */}
+          <div className="overflow-x-auto -mx-4 px-4 lg:mx-0 lg:px-0 scrollbar-hide">
+            <table className="w-full min-w-[600px]">
               <thead>
-                <tr className="text-left text-sm text-gray-400 border-b border-dark-600">
+                <tr className="text-left text-xs lg:text-sm text-gray-400 border-b border-dark-600">
                   <th className="pb-3">Symbol</th>
                   <th className="pb-3">Type</th>
                   <th className="pb-3">Entry</th>
                   <th className="pb-3">Current</th>
-                  <th className="pb-3">Quantity</th>
+                  <th className="pb-3">Qty</th>
                   <th className="pb-3">P&L</th>
                   <th className="pb-3">Status</th>
                   <th className="pb-3"></th>
@@ -534,30 +536,30 @@ export default function Trading() {
               <tbody>
                 {filteredPositions.map((position) => (
                   <tr key={position.id} className="border-b border-dark-700/50 hover:bg-dark-700/30">
-                    <td className="py-4">
+                    <td className="py-3">
                       <div className="flex items-center gap-2">
                         <span>{getMarketIcon(position.market)}</span>
-                        <span className="font-medium">{position.symbol}</span>
+                        <span className="font-medium text-sm">{position.symbol}</span>
                       </div>
                     </td>
-                    <td className="py-4">
-                      <span className="capitalize">{position.type}</span>
+                    <td className="py-3">
+                      <span className="capitalize text-sm">{position.type}</span>
                     </td>
-                    <td className="py-4">{formatCurrency(position.entryPrice)}</td>
-                    <td className="py-4">{formatCurrency(position.currentPrice)}</td>
-                    <td className="py-4">{position.quantity}</td>
-                    <td className="py-4">
-                      <span className={position.pnl >= 0 ? 'text-green-400' : 'text-red-400'}>
+                    <td className="py-3 text-sm">{formatCurrency(position.entryPrice)}</td>
+                    <td className="py-3 text-sm">{formatCurrency(position.currentPrice)}</td>
+                    <td className="py-3 text-sm">{position.quantity}</td>
+                    <td className="py-3">
+                      <span className={`text-sm ${position.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {formatCurrency(position.pnl)} ({formatPercent(position.pnlPercent)})
                       </span>
                     </td>
-                    <td className="py-4">
-                      <span className={`badge ${position.status === 'open' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                    <td className="py-3">
+                      <span className={`badge text-xs ${position.status === 'open' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
                         {position.status}
                       </span>
                     </td>
-                    <td className="py-4">
-                      <button className="p-1 hover:bg-dark-600 rounded">
+                    <td className="py-3">
+                      <button className="p-2 hover:bg-dark-600 rounded touch-target" aria-label="More">
                         <MoreHorizontal className="w-4 h-4 text-gray-400" />
                       </button>
                     </td>
@@ -571,30 +573,30 @@ export default function Trading() {
       
       {/* Signals Tab */}
       {activeTab === 'signals' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-4 lg:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
             {tradingSignals.map(signal => (
               <SignalCard key={signal.id} signal={signal} />
             ))}
           </div>
           
-          {/* Signal History / Pending */}
+          {/* Signal Configuration */}
           <div className="card">
-            <h3 className="font-bold mb-4">Signal Configuration</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-dark-700/50 rounded-lg">
-                <p className="text-sm text-gray-400 mb-2">Price Change Alert</p>
-                <p className="text-2xl font-bold">5%</p>
+            <h3 className="font-bold mb-3 lg:mb-4 text-sm lg:text-base">Signal Configuration</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
+              <div className="p-3 lg:p-4 bg-dark-700/50 rounded-lg">
+                <p className="text-xs lg:text-sm text-gray-400 mb-2">Price Change Alert</p>
+                <p className="text-xl lg:text-2xl font-bold">5%</p>
                 <p className="text-xs text-gray-500">Notify on ±5% moves</p>
               </div>
-              <div className="p-4 bg-dark-700/50 rounded-lg">
-                <p className="text-sm text-gray-400 mb-2">Volume Spike</p>
-                <p className="text-2xl font-bold">2x</p>
+              <div className="p-3 lg:p-4 bg-dark-700/50 rounded-lg">
+                <p className="text-xs lg:text-sm text-gray-400 mb-2">Volume Spike</p>
+                <p className="text-xl lg:text-2xl font-bold">2x</p>
                 <p className="text-xs text-gray-500">Alert on 2x avg volume</p>
               </div>
-              <div className="p-4 bg-dark-700/50 rounded-lg">
-                <p className="text-sm text-gray-400 mb-2">Auto-Trading</p>
-                <p className="text-2xl font-bold text-yellow-400">Off</p>
+              <div className="p-3 lg:p-4 bg-dark-700/50 rounded-lg">
+                <p className="text-xs lg:text-sm text-gray-400 mb-2">Auto-Trading</p>
+                <p className="text-xl lg:text-2xl font-bold text-yellow-400">Off</p>
                 <p className="text-xs text-gray-500">Manual execution only</p>
               </div>
             </div>
@@ -604,14 +606,14 @@ export default function Trading() {
       
       {/* History Tab */}
       {activeTab === 'history' && (
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Trade Decision Log */}
           <div>
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-brand-400" />
+            <h2 className="text-base lg:text-lg font-bold mb-3 lg:mb-4 flex items-center gap-2">
+              <Clock className="w-4 h-4 lg:w-5 lg:h-5 text-brand-400" />
               Decision Log
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-2 lg:space-y-3">
               {tradeDecisions.map(decision => (
                 <DecisionLog key={decision.id} decision={decision} />
               ))}
@@ -620,11 +622,11 @@ export default function Trading() {
           
           {/* Closed Positions */}
           <div>
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-green-400" />
+            <h2 className="text-base lg:text-lg font-bold mb-3 lg:mb-4 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 lg:w-5 lg:h-5 text-green-400" />
               Closed Positions
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
               {closedPositions.map(position => (
                 <PositionCard key={position.id} position={position} />
               ))}

@@ -145,36 +145,37 @@ export default function ContentPipeline() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Content Pipeline</h1>
-          <p className="text-gray-400 mt-1">Manage content from ideas to published</p>
+          <h1 className="responsive-h1">Content Pipeline</h1>
+          <p className="text-gray-400 mt-1 text-sm">Manage content from ideas to published</p>
         </div>
         <button 
           onClick={() => setIsCreating(true)}
-          className="btn-primary flex items-center gap-2"
+          className="btn-primary flex items-center gap-2 touch-target self-start sm:self-auto"
         >
           <Plus className="w-5 h-5" />
-          New Content
+          <span className="hidden sm:inline">New Content</span>
+          <span className="sm:hidden">New</span>
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-6 gap-4">
+      {/* Stats - Responsive Grid */}
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 lg:gap-4">
         {stages.map(stage => {
           const count = getItemsByStage(stage.id).length;
           const Icon = stage.icon;
           return (
-            <div key={stage.id} className="card">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-${stage.color}-500/20`}>
-                  <Icon className={`w-5 h-5 text-${stage.color}-400`} />
+            <div key={stage.id} className="card p-2 lg:p-4">
+              <div className="flex items-center gap-2 lg:gap-3">
+                <div className={`p-1.5 lg:p-2 rounded-lg bg-${stage.color}-500/20`}>
+                  <Icon className={`w-4 h-4 lg:w-5 lg:h-5 text-${stage.color}-400`} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{count}</p>
-                  <p className="text-xs text-gray-400">{stage.title}</p>
+                  <p className="text-xl lg:text-2xl font-bold">{count}</p>
+                  <p className="text-[10px] lg:text-xs text-gray-400">{stage.title}</p>
                 </div>
               </div>
             </div>
@@ -182,12 +183,12 @@ export default function ContentPipeline() {
         })}
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4">
+      {/* Filters - Mobile Scrollable */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
         <select 
           value={filterWorkflow}
           onChange={(e) => setFilterWorkflow(e.target.value as WorkflowType | 'all')}
-          className="input text-sm py-1.5"
+          className="input text-sm py-2 flex-shrink-0 min-w-[140px]"
         >
           <option value="all">All Workflows</option>
           {workflows.map(w => (
@@ -197,7 +198,7 @@ export default function ContentPipeline() {
         <select 
           value={filterType}
           onChange={(e) => setFilterType(e.target.value as ContentType | 'all')}
-          className="input text-sm py-1.5"
+          className="input text-sm py-2 flex-shrink-0 min-w-[120px]"
         >
           <option value="all">All Types</option>
           {contentTypes.map(t => (
@@ -206,143 +207,147 @@ export default function ContentPipeline() {
         </select>
       </div>
 
-      {/* Kanban Board */}
-      <div className="grid grid-cols-6 gap-4 overflow-x-auto pb-4">
-        {stages.map((stage) => {
-          const stageItems = getItemsByStage(stage.id);
-          return (
-            <div key={stage.id} className="flex flex-col min-w-[220px]">
-              {/* Column Header */}
-              <div className={`flex items-center justify-between mb-3 p-3 rounded-lg bg-dark-800 border-t-4 ${stageColors[stage.id]}`}>
-                <div className="flex items-center gap-2">
-                  <stage.icon className={`w-4 h-4 text-${stage.color}-400`} />
-                  <h3 className="font-bold text-sm">{stage.title}</h3>
+      {/* Kanban Board - Mobile Horizontal Scroll */}
+      <div className="overflow-x-auto -mx-4 px-4 pb-4 lg:mx-0 lg:px-0 scrollbar-hide">
+        <div className="flex lg:grid lg:grid-cols-6 gap-3 lg:gap-4 min-w-[1200px] lg:min-w-0">
+          {stages.map((stage) => {
+            const stageItems = getItemsByStage(stage.id);
+            return (
+              <div key={stage.id} className="flex flex-col w-[280px] lg:w-auto flex-shrink-0">
+                {/* Column Header */}
+                <div className={`flex items-center justify-between mb-3 p-2 lg:p-3 rounded-lg bg-dark-800 border-t-4 ${stageColors[stage.id]}`}>
+                  <div className="flex items-center gap-2">
+                    <stage.icon className={`w-4 h-4 text-${stage.color}-400`} />
+                    <h3 className="font-bold text-sm">{stage.title}</h3>
+                  </div>
+                  <span className="badge bg-dark-700 text-gray-400 text-xs">
+                    {stageItems.length}
+                  </span>
                 </div>
-                <span className="badge bg-dark-700 text-gray-400">
-                  {stageItems.length}
-                </span>
-              </div>
 
-              {/* Items */}
-              <div className="space-y-3">
-                <AnimatePresence>
-                  {stageItems.map((item, index) => (
-                    <motion.div
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ delay: index * 0.05 }}
-                      onClick={() => setSelectedItem(item)}
-                      className="card-hover cursor-pointer group relative"
-                    >
-                      {/* Stage Navigation */}
-                      <div className="absolute -left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleMoveStage(item.id, 'left'); }}
-                          className="p-1 bg-dark-700 rounded-full hover:bg-brand-600 transition-colors"
-                          disabled={item.stage === 'ideas'}
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div className="absolute -right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleMoveStage(item.id, 'right'); }}
-                          className="p-1 bg-dark-700 rounded-full hover:bg-brand-600 transition-colors"
-                          disabled={item.stage === 'publish'}
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      {/* Priority Badge */}
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`badge text-xs ${priorityColors[item.priority]}`}>
-                          {item.priority}
-                        </span>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id); }}
-                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-400 rounded transition-opacity"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      {/* Type & Title */}
-                      <div className="flex items-center gap-2 mb-2">
-                        {contentTypes.find(t => t.id === item.type)?.icon && (
-                          <span className="text-gray-400">
-                            {(() => {
-                              const TypeIcon = contentTypes.find(t => t.id === item.type)?.icon;
-                              return TypeIcon ? <TypeIcon className="w-4 h-4" /> : null;
-                            })()}
-                          </span>
-                        )}
-                        <h4 className="font-medium text-sm line-clamp-2">{item.title}</h4>
-                      </div>
-
-                      {/* Description */}
-                      <p className="text-xs text-gray-400 mb-3 line-clamp-2">
-                        {item.description}
-                      </p>
-
-                      {/* Images Preview */}
-                      {item.images.length > 0 && (
-                        <div className="flex gap-1 mb-3">
-                          {item.images.slice(0, 3).map((img) => (
-                            <div key={img.id} className="relative w-8 h-8 rounded overflow-hidden">
-                              <img src={img.url} alt="" className="w-full h-full object-cover" />
-                            </div>
-                          ))}
-                          {item.images.length > 3 && (
-                            <div className="w-8 h-8 rounded bg-dark-700 flex items-center justify-center text-xs text-gray-400">
-                              +{item.images.length - 3}
-                            </div>
-                          )}
+                {/* Items */}
+                <div className="space-y-3">
+                  <AnimatePresence>
+                    {stageItems.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        layout
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ delay: index * 0.05 }}
+                        onClick={() => setSelectedItem(item)}
+                        className="card-hover cursor-pointer group relative"
+                      >
+                        {/* Stage Navigation */}
+                        <div className="absolute -left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleMoveStage(item.id, 'left'); }}
+                            className="p-1 bg-dark-700 rounded-full hover:bg-brand-600 transition-colors"
+                            disabled={item.stage === 'ideas'}
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
                         </div>
-                      )}
-
-                      {/* Meta */}
-                      <div className="flex items-center justify-between text-xs text-gray-400">
-                        <div className="flex items-center gap-2">
-                          <User className="w-3 h-3" />
-                          <span className={item.assignee === 'tee' ? 'text-brand-400' : 'text-purple-400'}>
-                            {item.assignee === 'tee' ? 'Tee' : 'Robin'}
-                          </span>
+                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleMoveStage(item.id, 'right'); }}
+                            className="p-1 bg-dark-700 rounded-full hover:bg-brand-600 transition-colors"
+                            disabled={item.stage === 'publish'}
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
                         </div>
-                        {item.scheduledDate && (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            <span>{new Date(item.scheduledDate).toLocaleDateString()}</span>
+
+                        {/* Priority Badge */}
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`badge text-xs ${priorityColors[item.priority]}`}>
+                            {item.priority}
+                          </span>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id); }}
+                            className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500/20 hover:text-red-400 rounded transition-opacity touch-target"
+                            aria-label="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Type & Title */}
+                        <div className="flex items-center gap-2 mb-2">
+                          {(() => {
+                            const TypeIcon = contentTypes.find(t => t.id === item.type)?.icon;
+                            return TypeIcon ? <TypeIcon className="w-4 h-4 text-gray-400" /> : null;
+                          })()}
+                          <h4 className="font-medium text-sm line-clamp-2">{item.title}</h4>
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-xs text-gray-400 mb-3 line-clamp-2">
+                          {item.description}
+                        </p>
+
+                        {/* Images Preview */}
+                        {item.images.length > 0 && (
+                          <div className="flex gap-1 mb-3">
+                            {item.images.slice(0, 3).map((img) => (
+                              <div key={img.id} className="relative w-8 h-8 rounded overflow-hidden">
+                                <img src={img.url} alt="" className="w-full h-full object-cover" />
+                              </div>
+                            ))}
+                            {item.images.length > 3 && (
+                              <div className="w-8 h-8 rounded bg-dark-700 flex items-center justify-center text-xs text-gray-400">
+                                +{item.images.length - 3}
+                              </div>
+                            )}
                           </div>
                         )}
-                      </div>
 
-                      {/* Tags */}
-                      {item.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {item.tags.slice(0, 2).map((tag) => (
-                            <span key={tag} className="badge bg-dark-700 text-gray-400 text-xs">
-                              {tag}
+                        {/* Meta */}
+                        <div className="flex items-center justify-between text-xs text-gray-400 flex-wrap gap-1">
+                          <div className="flex items-center gap-1">
+                            <User className="w-3 h-3" />
+                            <span className={item.assignee === 'tee' ? 'text-brand-400' : 'text-purple-400'}>
+                              {item.assignee === 'tee' ? 'Tee' : 'Robin'}
                             </span>
-                          ))}
-                          {item.tags.length > 2 && (
-                            <span className="badge bg-dark-700 text-gray-400 text-xs">
-                              +{item.tags.length - 2}
-                            </span>
+                          </div>
+                          {item.scheduledDate && (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              <span>{new Date(item.scheduledDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                            </div>
                           )}
                         </div>
-                      )}
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+
+                        {/* Tags */}
+                        {item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {item.tags.slice(0, 2).map((tag) => (
+                              <span key={tag} className="badge bg-dark-700 text-gray-400 text-xs">
+                                {tag}
+                              </span>
+                            ))}
+                            {item.tags.length > 2 && (
+                              <span className="badge bg-dark-700 text-gray-400 text-xs">
+                                +{item.tags.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
+
+      {/* Mobile hint */}
+      <p className="text-xs text-gray-500 text-center lg:hidden">
+        Swipe horizontally to see all stages
+      </p>
 
       {/* Create/Edit Modal */}
       <AnimatePresence>

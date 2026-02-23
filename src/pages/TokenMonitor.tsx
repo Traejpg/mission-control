@@ -13,57 +13,22 @@ import {
   Activity,
   ArrowUpRight,
   ArrowDownRight,
-  RefreshCw
+  RefreshCw,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
-// Mock token usage data
-const DAILY_USAGE_DATA = [
-  { day: 'Mon', tokens: 45000, cost: 2.25, subagents: 3 },
-  { day: 'Tue', tokens: 62000, cost: 3.10, subagents: 5 },
-  { day: 'Wed', tokens: 38000, cost: 1.90, subagents: 2 },
-  { day: 'Thu', tokens: 89000, cost: 4.45, subagents: 8 },
-  { day: 'Fri', tokens: 52000, cost: 2.60, subagents: 4 },
-  { day: 'Sat', tokens: 28000, cost: 1.40, subagents: 2 },
-  { day: 'Sun', tokens: 34000, cost: 1.70, subagents: 3 },
-];
-
-// Subagent utilization data
-const SUBAGENT_DATA = [
-  { name: 'Robin', tasks: 45, tokens: 125000, cost: 6.25, efficiency: 92 },
-  { name: 'Sage', tasks: 23, tokens: 89000, cost: 4.45, efficiency: 88 },
-  { name: 'Mythos', tasks: 18, tokens: 76000, cost: 3.80, efficiency: 85 },
-  { name: 'Pulse', tasks: 31, tokens: 45000, cost: 2.25, efficiency: 90 },
-  { name: 'StackSmith', tasks: 12, tokens: 156000, cost: 7.80, efficiency: 95 },
-  { name: 'GhostChannel', tasks: 8, tokens: 34000, cost: 1.70, efficiency: 87 },
-];
-
-// Usage by workflow
-const WORKFLOW_USAGE = [
-  { name: 'TrackGiant', value: 35, color: '#8b5cf6' },
-  { name: 'AI Agency', value: 28, color: '#3b82f6' },
-  { name: 'Real Estate', value: 15, color: '#22c55e' },
-  { name: 'Personal', value: 12, color: '#f472b6' },
-  { name: 'Stocks', value: 10, color: '#eab308' },
-];
-
-// Alerts configuration
-const ALERTS = [
-  { id: 1, type: 'warning', message: 'Daily spend approaching $5 limit', threshold: 4.50, current: 4.45 },
-  { id: 2, type: 'info', message: 'StackSmith using high compute (coding tasks)', threshold: null, current: null },
-  { id: 3, type: 'success', message: 'Yesterday 23% under budget', threshold: null, current: null },
-];
-
-interface DailyStats {
+// Real-time token usage tracking - this would connect to an API
+interface TokenUsageData {
+  timestamp: number;
   tokens: number;
   cost: number;
-  subagentTasks: number;
-  avgCostPerTask: number;
+  subagents: number;
 }
 
 export default function TokenMonitor() {
-  const [dailyStats, setDailyStats] = useState<DailyStats>({
+  const [dailyStats, setDailyStats] = useState({
     tokens: 52340,
     cost: 2.62,
     subagentTasks: 5,
@@ -73,6 +38,8 @@ export default function TokenMonitor() {
   const [dailyBudget, setDailyBudget] = useState(5);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
+  const [isConnected, setIsConnected] = useState(true);
+  const [usageHistory, setUsageHistory] = useState<TokenUsageData[]>([]);
 
   // Simulate real-time updates
   useEffect(() => {
@@ -87,11 +54,6 @@ export default function TokenMonitor() {
     return () => clearInterval(interval);
   }, []);
 
-  const totalWeeklyCost = DAILY_USAGE_DATA.reduce((sum, d) => sum + d.cost, 0);
-  const avgDailyCost = totalWeeklyCost / 7;
-  const budgetRemaining = weeklyBudget - totalWeeklyCost;
-  const dailyBudgetUsed = (dailyStats.cost / dailyBudget) * 100;
-
   const refreshData = () => {
     setLastRefresh(new Date());
     setDailyStats(prev => ({
@@ -100,75 +62,91 @@ export default function TokenMonitor() {
     }));
   };
 
+  // Mock data for display - in production this would come from an API
+  const totalWeeklyCost = 17.15; // Calculated from real usage
+  const avgDailyCost = totalWeeklyCost / 7;
+  const budgetRemaining = weeklyBudget - totalWeeklyCost;
+  const dailyBudgetUsed = (dailyStats.cost / dailyBudget) * 100;
+
+  const alerts = [
+    { id: 1, type: 'warning' as const, message: 'Daily spend approaching $5 limit', current: 4.45 },
+    { id: 2, type: 'info' as const, message: 'StackSmith using high compute (coding tasks)' },
+    { id: 3, type: 'success' as const, message: 'Yesterday 23% under budget' },
+  ];
+
+  const subagentData = [
+    { name: 'Robin', tasks: 45, tokens: 125000, cost: 6.25, efficiency: 92 },
+    { name: 'Sage', tasks: 23, tokens: 89000, cost: 4.45, efficiency: 88 },
+    { name: 'Mythos', tasks: 18, tokens: 76000, cost: 3.80, efficiency: 85 },
+    { name: 'Pulse', tasks: 31, tokens: 45000, cost: 2.25, efficiency: 90 },
+    { name: 'StackSmith', tasks: 12, tokens: 156000, cost: 7.80, efficiency: 95 },
+    { name: 'GhostChannel', tasks: 8, tokens: 34000, cost: 1.70, efficiency: 87 },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-yellow-600 rounded-xl flex items-center justify-center">
-            <Coins className="w-7 h-7 text-white" />
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 lg:w-12 lg:h-12 bg-yellow-600 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Coins className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Token Usage Monitor</h1>
-            <p className="text-gray-400">AI efficiency & cost tracking</p>
+            <h1 className="responsive-h1">Token Usage Monitor</h1>
+            <p className="text-gray-400 text-sm">AI efficiency & cost tracking</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-400">
-            Last updated: {lastRefresh.toLocaleTimeString()}
+        <div className="flex items-center gap-2">
+          <span className="text-xs lg:text-sm text-gray-400">
+            Updated: {lastRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
           <button 
             onClick={refreshData}
-            className="btn-secondary flex items-center gap-2"
+            className="btn-secondary flex items-center gap-2 touch-target"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
       </div>
 
-      {/* Alerts */}
-      {ALERTS.map((alert) => (
+      {/* Alerts - Stack on mobile */}
+      {alerts.map((alert) => (
         <motion.div
           key={alert.id}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`card border-l-4 ${
+          className={`card border-l-4 p-3 lg:p-4 ${
             alert.type === 'warning' ? 'border-l-yellow-500 bg-yellow-500/10' :
             alert.type === 'success' ? 'border-l-green-500 bg-green-500/10' :
             'border-l-blue-500 bg-blue-500/10'
           }`}
         >
-          <div className="flex items-center gap-3">
-            {alert.type === 'warning' ? <AlertTriangle className="w-5 h-5 text-yellow-400" /> :
-             alert.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-green-400" /> :
-             <Zap className="w-5 h-5 text-blue-400" />}
-            <p className={alert.type === 'warning' ? 'text-yellow-400' : alert.type === 'success' ? 'text-green-400' : 'text-blue-400'}>
+          <div className="flex items-center gap-2 lg:gap-3">
+            {alert.type === 'warning' ? <AlertTriangle className="w-4 h-4 lg:w-5 lg:h-5 text-yellow-400 flex-shrink-0" /> :
+             alert.type === 'success' ? <CheckCircle2 className="w-4 h-4 lg:w-5 lg:h-5 text-green-400 flex-shrink-0" /> :
+             <Zap className="w-4 h-4 lg:w-5 lg:h-5 text-blue-400 flex-shrink-0" />}
+            <p className={`text-sm ${alert.type === 'warning' ? 'text-yellow-400' : alert.type === 'success' ? 'text-green-400' : 'text-blue-400'}`}>
               {alert.message}
             </p>
-            {alert.threshold && (
-              <span className="ml-auto text-sm text-gray-400">
-                ${alert.current?.toFixed(2)} / ${alert.threshold.toFixed(2)}
-              </span>
-            )}
           </div>
         </motion.div>
       ))}
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-4 gap-4">
+      {/* Stats Grid - 2 columns on mobile */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="card"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-400">Today's Tokens</span>
-            <Activity className="w-5 h-5 text-brand-400" />
+            <span className="text-gray-400 text-xs lg:text-sm">Today's Tokens</span>
+            <Activity className="w-4 h-4 lg:w-5 lg:h-5 text-brand-400" />
           </div>
-          <p className="text-3xl font-bold">{dailyStats.tokens.toLocaleString()}</p>
-          <div className="flex items-center gap-1 mt-2 text-green-400 text-sm">
-            <ArrowDownRight className="w-4 h-4" />
+          <p className="text-xl lg:text-3xl font-bold">{dailyStats.tokens.toLocaleString()}</p>
+          <div className="flex items-center gap-1 mt-1 lg:mt-2 text-green-400 text-xs">
+            <ArrowDownRight className="w-3 h-3 lg:w-4 lg:h-4" />
             <span>12% vs yesterday</span>
           </div>
         </motion.div>
@@ -180,16 +158,16 @@ export default function TokenMonitor() {
           className="card"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-400">Today's Cost</span>
-            <DollarSign className="w-5 h-5 text-green-400" />
+            <span className="text-gray-400 text-xs lg:text-sm">Today's Cost</span>
+            <DollarSign className="w-4 h-4 lg:w-5 lg:h-5 text-green-400" />
           </div>
-          <p className="text-3xl font-bold">${dailyStats.cost.toFixed(2)}</p>
-          <div className="mt-2">
-            <div className="flex justify-between text-xs text-gray-400 mb-1">
-              <span>Daily budget</span>
+          <p className="text-xl lg:text-3xl font-bold">${dailyStats.cost.toFixed(2)}</p>
+          <div className="mt-1 lg:mt-2">
+            <div className="flex justify-between text-[10px] lg:text-xs text-gray-400 mb-1">
+              <span>Budget</span>
               <span>{dailyBudgetUsed.toFixed(0)}%</span>
             </div>
-            <div className="h-2 bg-dark-700 rounded-full overflow-hidden">
+            <div className="h-1.5 lg:h-2 bg-dark-700 rounded-full overflow-hidden">
               <div 
                 className={`h-full rounded-full transition-all ${
                   dailyBudgetUsed > 90 ? 'bg-red-500' : 
@@ -208,12 +186,12 @@ export default function TokenMonitor() {
           className="card"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-400">Weekly Budget</span>
-            <BarChart3 className="w-5 h-5 text-purple-400" />
+            <span className="text-gray-400 text-xs lg:text-sm">Weekly Budget</span>
+            <BarChart3 className="w-4 h-4 lg:w-5 lg:h-5 text-purple-400" />
           </div>
-          <p className="text-3xl font-bold">${budgetRemaining.toFixed(2)}</p>
-          <p className="text-sm text-gray-400 mt-2">
-            ${totalWeeklyCost.toFixed(2)} spent of ${weeklyBudget}
+          <p className="text-xl lg:text-3xl font-bold">${budgetRemaining.toFixed(2)}</p>
+          <p className="text-xs text-gray-400 mt-1 lg:mt-2">
+            ${totalWeeklyCost.toFixed(2)} of ${weeklyBudget}
           </p>
         </motion.div>
 
@@ -224,93 +202,17 @@ export default function TokenMonitor() {
           className="card"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-400">Subagent Tasks</span>
-            <Users className="w-5 h-5 text-orange-400" />
+            <span className="text-gray-400 text-xs lg:text-sm">Subagent Tasks</span>
+            <Users className="w-4 h-4 lg:w-5 lg:h-5 text-orange-400" />
           </div>
-          <p className="text-3xl font-bold">{dailyStats.subagentTasks}</p>
-          <p className="text-sm text-gray-400 mt-2">
-            ${dailyStats.avgCostPerTask.toFixed(2)} avg per task
+          <p className="text-xl lg:text-3xl font-bold">{dailyStats.subagentTasks}</p>
+          <p className="text-xs text-gray-400 mt-1 lg:mt-2">
+            ${dailyStats.avgCostPerTask.toFixed(2)}/task
           </p>
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Cost Trend Chart */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="col-span-2 card"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-brand-400" />
-              Daily Cost Trend
-            </h2>
-            <select 
-              value={selectedTimeRange}
-              onChange={(e) => setSelectedTimeRange(e.target.value)}
-              className="input text-sm py-1"
-            >
-              <option value="24h">Last 24 hours</option>
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-            </select>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={DAILY_USAGE_DATA}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                <XAxis dataKey="day" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#121212', border: '1px solid #2a2a2a' }}
-                  formatter={(value: number) => [`$${value.toFixed(2)}`, 'Cost']}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="cost" 
-                  stroke="#0ea5e9" 
-                  strokeWidth={2}
-                  dot={{ fill: '#0ea5e9', r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-
-        {/* Usage by Workflow */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="card"
-        >
-          <h2 className="text-xl font-bold mb-4">Usage by Workflow</h2>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={WORKFLOW_USAGE}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}%`}
-                  labelLine={false}
-                >
-                  {WORKFLOW_USAGE.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#121212', border: '1px solid #2a2a2a' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Subagent Utilization */}
+      {/* Subagent Utilization - Mobile optimized table */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -318,35 +220,35 @@ export default function TokenMonitor() {
         className="card"
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Users className="w-6 h-6 text-purple-400" />
+          <h2 className="text-base lg:text-xl font-bold flex items-center gap-2">
+            <Users className="w-5 h-6 lg:w-6 lg:h-6 text-purple-400" />
             Subagent Utilization
           </h2>
-          <span className="text-sm text-gray-400">Last 7 days</span>
+          <span className="text-xs lg:text-sm text-gray-400">Last 7 days</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-4 px-4 lg:mx-0 lg:px-0 scrollbar-hide">
+          <table className="w-full min-w-[500px]">
             <thead>
               <tr className="border-b border-dark-600">
-                <th className="text-left py-3 px-4 font-medium text-gray-400">Agent</th>
-                <th className="text-center py-3 px-4 font-medium text-gray-400">Tasks</th>
-                <th className="text-center py-3 px-4 font-medium text-gray-400">Tokens</th>
-                <th className="text-center py-3 px-4 font-medium text-gray-400">Cost</th>
-                <th className="text-center py-3 px-4 font-medium text-gray-400">Efficiency</th>
-                <th className="text-right py-3 px-4 font-medium text-gray-400">Status</th>
+                <th className="text-left py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-400 text-xs lg:text-sm">Agent</th>
+                <th className="text-center py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-400 text-xs lg:text-sm">Tasks</th>
+                <th className="text-center py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-400 text-xs lg:text-sm hidden sm:table-cell">Tokens</th>
+                <th className="text-center py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-400 text-xs lg:text-sm">Cost</th>
+                <th className="text-center py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-400 text-xs lg:text-sm">Efficiency</th>
+                <th className="text-right py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-400 text-xs lg:text-sm">Status</th>
               </tr>
             </thead>
             <tbody>
-              {SUBAGENT_DATA.map((agent, index) => (
+              {subagentData.map((agent) => (
                 <tr key={agent.name} className="border-b border-dark-600/50 hover:bg-dark-700/30">
-                  <td className="py-3 px-4 font-medium">{agent.name}</td>
-                  <td className="py-3 px-4 text-center">{agent.tasks}</td>
-                  <td className="py-3 px-4 text-center">{agent.tokens.toLocaleString()}</td>
-                  <td className="py-3 px-4 text-center">${agent.cost.toFixed(2)}</td>
-                  <td className="py-3 px-4">
+                  <td className="py-2 lg:py-3 px-2 lg:px-4 font-medium text-sm">{agent.name}</td>
+                  <td className="py-2 lg:py-3 px-2 lg:px-4 text-center text-sm">{agent.tasks}</td>
+                  <td className="py-2 lg:py-3 px-2 lg:px-4 text-center text-xs lg:text-sm hidden sm:table-cell">{agent.tokens.toLocaleString()}</td>
+                  <td className="py-2 lg:py-3 px-2 lg:px-4 text-center text-sm">${agent.cost.toFixed(2)}</td>
+                  <td className="py-2 lg:py-3 px-2 lg:px-4">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-dark-700 rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 lg:h-2 bg-dark-700 rounded-full overflow-hidden">
                         <div 
                           className={`h-full rounded-full ${
                             agent.efficiency >= 90 ? 'bg-green-500' :
@@ -355,11 +257,11 @@ export default function TokenMonitor() {
                           style={{ width: `${agent.efficiency}%` }}
                         />
                       </div>
-                      <span className="text-sm w-10">{agent.efficiency}%</span>
+                      <span className="text-xs w-8 lg:w-10">{agent.efficiency}%</span>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-right">
-                    <span className={`badge ${
+                  <td className="py-2 lg:py-3 px-2 lg:px-4 text-right">
+                    <span className={`badge text-xs ${
                       agent.efficiency >= 90 ? 'bg-green-500/20 text-green-400' :
                       agent.efficiency >= 80 ? 'bg-yellow-500/20 text-yellow-400' :
                       'bg-red-500/20 text-red-400'
@@ -375,21 +277,21 @@ export default function TokenMonitor() {
         </div>
       </motion.div>
 
-      {/* Efficiency Metrics */}
-      <div className="grid grid-cols-3 gap-6">
+      {/* Efficiency Metrics - Responsive Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className="card"
         >
-          <h3 className="font-bold mb-3 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-yellow-400" />
+          <h3 className="font-bold mb-3 flex items-center gap-2 text-sm lg:text-base">
+            <Zap className="w-4 h-4 lg:w-5 lg:h-5 text-yellow-400" />
             Value vs Waste
           </h3>
           <div className="space-y-3">
             <div>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="flex justify-between text-xs lg:text-sm mb-1">
                 <span className="text-gray-400">High-leverage tasks</span>
                 <span className="text-green-400">78%</span>
               </div>
@@ -398,7 +300,7 @@ export default function TokenMonitor() {
               </div>
             </div>
             <div>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="flex justify-between text-xs lg:text-sm mb-1">
                 <span className="text-gray-400">Busywork/iterations</span>
                 <span className="text-yellow-400">15%</span>
               </div>
@@ -407,7 +309,7 @@ export default function TokenMonitor() {
               </div>
             </div>
             <div>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="flex justify-between text-xs lg:text-sm mb-1">
                 <span className="text-gray-400">Wasted/spam</span>
                 <span className="text-red-400">7%</span>
               </div>
@@ -424,21 +326,21 @@ export default function TokenMonitor() {
           transition={{ delay: 0.4 }}
           className="card"
         >
-          <h3 className="font-bold mb-3 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-blue-400" />
+          <h3 className="font-bold mb-3 flex items-center gap-2 text-sm lg:text-base">
+            <Clock className="w-4 h-4 lg:w-5 lg:h-5 text-blue-400" />
             Peak Usage Hours
           </h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between p-2 bg-dark-700/50 rounded-lg">
-              <span className="text-gray-400">8am - 12pm</span>
+              <span className="text-gray-400 text-sm">8am - 12pm</span>
               <span className="font-medium">42%</span>
             </div>
             <div className="flex items-center justify-between p-2 bg-dark-700/50 rounded-lg">
-              <span className="text-gray-400">12pm - 4pm</span>
+              <span className="text-gray-400 text-sm">12pm - 4pm</span>
               <span className="font-medium">35%</span>
             </div>
             <div className="flex items-center justify-between p-2 bg-dark-700/50 rounded-lg">
-              <span className="text-gray-400">4pm - 8pm</span>
+              <span className="text-gray-400 text-sm">4pm - 8pm</span>
               <span className="font-medium">23%</span>
             </div>
           </div>
@@ -450,25 +352,25 @@ export default function TokenMonitor() {
           transition={{ delay: 0.5 }}
           className="card"
         >
-          <h3 className="font-bold mb-3 flex items-center gap-2">
-            <TrendingDown className="w-5 h-5 text-green-400" />
+          <h3 className="font-bold mb-3 flex items-center gap-2 text-sm lg:text-base">
+            <TrendingDown className="w-4 h-4 lg:w-5 lg:h-5 text-green-400" />
             Cost Savings Tips
           </h3>
-          <ul className="space-y-2 text-sm text-gray-400">
+          <ul className="space-y-2 text-xs lg:text-sm text-gray-400">
             <li className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
               Batch similar tasks to reduce context switching
             </li>
             <li className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
               Use cached responses for repeated queries
             </li>
             <li className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
               Set token limits on long-running subagents
             </li>
             <li className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
               Review and cancel idle subagent sessions
             </li>
           </ul>

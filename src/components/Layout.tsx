@@ -328,7 +328,7 @@ export default function Layout({ children }: LayoutProps) {
         </main>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-dark-800 border-t border-dark-600 px-2 py-2 safe-area-pb">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-dark-800 border-t border-dark-600 safe-area-pb z-40">
           <div className="flex justify-around items-center">
             {mobileNavItems.map((item) => {
               const Icon = item.icon;
@@ -339,7 +339,7 @@ export default function Layout({ children }: LayoutProps) {
                   <button
                     key={item.path}
                     onClick={() => setMobileMenuOpen(true)}
-                    className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${
+                    className={`flex flex-col items-center justify-center py-3 px-4 min-h-[56px] min-w-[56px] rounded-lg transition-colors ${
                       mobileMenuOpen
                         ? 'text-brand-400'
                         : 'text-gray-400'
@@ -355,7 +355,7 @@ export default function Layout({ children }: LayoutProps) {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${
+                  className={`flex flex-col items-center justify-center py-3 px-4 min-h-[56px] min-w-[56px] rounded-lg transition-colors ${
                     active
                       ? 'text-brand-400'
                       : 'text-gray-400'

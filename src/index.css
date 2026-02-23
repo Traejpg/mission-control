@@ -42,19 +42,24 @@
   }
   
   .btn-primary {
-    @apply bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply bg-brand-600 hover:bg-brand-500 text-white px-4 py-2.5 rounded-lg font-medium transition-colors min-h-[44px] inline-flex items-center justify-center;
   }
   
   .btn-secondary {
-    @apply bg-dark-700 hover:bg-dark-600 text-white px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply bg-dark-700 hover:bg-dark-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors min-h-[44px] inline-flex items-center justify-center;
+  }
+  
+  .btn-primary:disabled,
+  .btn-secondary:disabled {
+    @apply opacity-50 cursor-not-allowed;
   }
   
   .input {
-    @apply bg-dark-700 border border-dark-600 rounded-lg px-4 py-2 text-white placeholder-dark-500 focus:outline-none focus:border-brand-500;
+    @apply bg-dark-700 border border-dark-600 rounded-lg px-4 py-2.5 text-white placeholder-dark-500 focus:outline-none focus:border-brand-500 min-h-[44px];
   }
   
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
   }
   
   .status-online {
@@ -78,12 +83,20 @@
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   }
   
-  /* Touch Friendly */
+  .safe-area-pt {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
+  
+  /* Touch Friendly - Minimum 44px */
   .touch-target {
     @apply min-h-[44px] min-w-[44px];
   }
   
-  /* Mobile Scroll */
+  .touch-button {
+    @apply min-h-[44px] min-w-[44px] p-3;
+  }
+  
+  /* Mobile Scroll Utilities */
   .mobile-scroll {
     @apply overflow-x-auto overflow-y-hidden;
     -webkit-overflow-scrolling: touch;
@@ -95,9 +108,70 @@
     display: none;
   }
   
+  /* Table Wrapper for Horizontal Scroll */
+  .table-wrapper {
+    @apply overflow-x-auto -mx-4 px-4;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table-wrapper table {
+    @apply min-w-[640px];
+  }
+  
+  /* Responsive Grid Utilities */
+  .responsive-grid-2 {
+    @apply grid-cols-1 sm:grid-cols-2;
+  }
+  
+  .responsive-grid-3 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+  
+  .responsive-grid-4 {
+    @apply grid-cols-2 sm:grid-cols-2 lg:grid-cols-4;
+  }
+  
+  .responsive-grid-6 {
+    @apply grid-cols-2 sm:grid-cols-3 lg:grid-cols-6;
+  }
+  
   /* Prevent text selection on mobile */
   .no-select {
     -webkit-user-select: none;
     user-select: none;
+  }
+  
+  /* Responsive Typography */
+  .responsive-h1 {
+    @apply text-xl sm:text-2xl lg:text-3xl font-bold;
+  }
+  
+  .responsive-h2 {
+    @apply text-lg sm:text-xl lg:text-2xl font-bold;
+  }
+  
+  .responsive-body {
+    @apply text-sm sm:text-base;
+  }
+  
+  /* Kanban Board - Horizontal scroll on mobile */
+  .kanban-board {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4;
+  }
+  
+  @media (max-width: 768px) {
+    .kanban-board-mobile {
+      @apply flex overflow-x-auto pb-4 gap-4;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    
+    .kanban-board-mobile::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .kanban-board-mobile > * {
+      @apply flex-shrink-0 w-[85vw] max-w-[320px];
+    }
   }
 }

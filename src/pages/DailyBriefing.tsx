@@ -13,7 +13,9 @@ import {
   ChevronRight,
   Flame,
   Zap,
-  Brain
+  Brain,
+  Plus,
+  Minus
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -149,23 +151,23 @@ export default function DailyBriefing() {
   const todayWorkout = WORKOUT_CYCLE[currentDay - 1];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center">
-            <Sun className="w-7 h-7 text-white" />
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 lg:w-12 lg:h-12 bg-brand-600 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Sun className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Daily Briefing</h1>
-            <p className="text-gray-400">
+            <h1 className="responsive-h1">Daily Briefing</h1>
+            <p className="text-gray-400 text-sm">
               {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-2xl font-mono font-bold text-brand-400">
+            <p className="text-xl lg:text-2xl font-mono font-bold text-brand-400">
               {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
             </p>
             <p className="text-xs text-gray-400">
@@ -176,23 +178,24 @@ export default function DailyBriefing() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      {/* Responsive Grid - Single column on mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Left Column - Priorities & Stock */}
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Top 3 Priorities */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="card border-t-4 border-t-red-500"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <Target className="w-6 h-6 text-red-400" />
-              <h2 className="text-xl font-bold">Top 3 Priorities</h2>
+            <div className="flex items-center gap-2 lg:gap-3 mb-4">
+              <Target className="w-5 h-5 lg:w-6 lg:h-6 text-red-400" />
+              <h2 className="text-lg lg:text-xl font-bold">Top 3 Priorities</h2>
             </div>
             <div className="space-y-3">
               {priorities.map((priority, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-sm font-bold">
+                <div key={index} className="flex items-center gap-2 lg:gap-3">
+                  <span className="w-6 h-6 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-sm font-bold flex-shrink-0">
                     {index + 1}
                   </span>
                   <input
@@ -200,7 +203,7 @@ export default function DailyBriefing() {
                     value={priority}
                     onChange={(e) => setPriorities(prev => prev.map((p, i) => i === index ? e.target.value : p))}
                     placeholder={`Priority ${index + 1}...`}
-                    className="flex-1 input"
+                    className="flex-1 input text-sm"
                   />
                 </div>
               ))}
@@ -214,17 +217,17 @@ export default function DailyBriefing() {
             transition={{ delay: 0.1 }}
             className="card border-t-4 border-t-green-500"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <TrendingUp className="w-6 h-6 text-green-400" />
-              <h2 className="text-xl font-bold">Stock Option Play</h2>
+            <div className="flex items-center gap-2 lg:gap-3 mb-4">
+              <TrendingUp className="w-5 h-5 lg:w-6 lg:h-6 text-green-400" />
+              <h2 className="text-lg lg:text-xl font-bold">Stock Option Play</h2>
             </div>
             <textarea
               value={stockPlay}
               onChange={(e) => setStockPlay(e.target.value)}
               placeholder="Today's option play strategy..."
-              className="w-full input h-24 resize-none"
+              className="w-full input h-20 lg:h-24 resize-none text-sm"
             />
-            <div className="mt-3 flex items-center gap-2 text-sm text-gray-400">
+            <div className="mt-3 flex items-center gap-2 text-xs lg:text-sm text-gray-400">
               <Clock className="w-4 h-4" />
               <span>Pre-market: 6:30 AM</span>
             </div>
@@ -237,14 +240,14 @@ export default function DailyBriefing() {
             transition={{ delay: 0.2 }}
             className="card bg-gradient-to-br from-purple-900/30 to-dark-800"
           >
-            <div className="flex items-center gap-3 mb-3">
-              <Quote className="w-5 h-5 text-purple-400" />
-              <h3 className="font-bold text-purple-400">Deep Thought</h3>
+            <div className="flex items-center gap-2 lg:gap-3 mb-3">
+              <Quote className="w-4 h-4 lg:w-5 lg:h-5 text-purple-400" />
+              <h3 className="font-bold text-purple-400 text-sm lg:text-base">Deep Thought</h3>
             </div>
-            <p className="text-lg italic text-gray-300">"{deepThought}"</p>
+            <p className="text-base lg:text-lg italic text-gray-300">"{deepThought}"</p>
             <button 
               onClick={() => setDeepThought(DEEP_THOUGHTS[Math.floor(Math.random() * DEEP_THOUGHTS.length)])}
-              className="mt-4 text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
+              className="mt-4 text-xs lg:text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1 touch-target"
             >
               <Zap className="w-4 h-4" />
               New Quote
@@ -253,7 +256,7 @@ export default function DailyBriefing() {
         </div>
 
         {/* Middle Column - Health & Nutrition */}
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Gym Status */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -262,25 +265,25 @@ export default function DailyBriefing() {
             className="card border-t-4 border-t-blue-500"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <Dumbbell className="w-6 h-6 text-blue-400" />
-                <h2 className="text-xl font-bold">Gym Status</h2>
+              <div className="flex items-center gap-2 lg:gap-3">
+                <Dumbbell className="w-5 h-5 lg:w-6 lg:h-6 text-blue-400" />
+                <h2 className="text-lg lg:text-xl font-bold">Gym Status</h2>
               </div>
               <button 
                 onClick={advanceWorkoutDay}
-                className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 touch-target"
               >
                 Mark Complete
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
             
-            <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/30">
+            <div className="bg-blue-500/10 rounded-lg p-3 lg:p-4 border border-blue-500/30">
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-3xl">{todayWorkout.icon}</span>
+                <span className="text-2xl lg:text-3xl">{todayWorkout.icon}</span>
                 <div>
-                  <p className="text-sm text-gray-400">Day {currentDay} of 4</p>
-                  <p className="font-bold text-lg">{todayWorkout.name}</p>
+                  <p className="text-xs lg:text-sm text-gray-400">Day {currentDay} of 4</p>
+                  <p className="font-bold text-base lg:text-lg">{todayWorkout.name}</p>
                 </div>
               </div>
             </div>
@@ -296,9 +299,9 @@ export default function DailyBriefing() {
               ))}
             </div>
 
-            <div className="mt-4 flex items-center gap-2 text-sm">
+            <div className="mt-4 flex items-center gap-2 text-xs lg:text-sm">
               <Flame className="w-4 h-4 text-orange-400" />
-              <span className="text-gray-400">Preferred time: Early morning or pre-lunch</span>
+              <span className="text-gray-400">Preferred: Early morning or pre-lunch</span>
             </div>
           </motion.div>
 
@@ -310,11 +313,11 @@ export default function DailyBriefing() {
             className="card border-t-4 border-t-orange-500"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <Utensils className="w-6 h-6 text-orange-400" />
-                <h2 className="text-xl font-bold">Nutrition</h2>
+              <div className="flex items-center gap-2 lg:gap-3">
+                <Utensils className="w-5 h-5 lg:w-6 lg:h-6 text-orange-400" />
+                <h2 className="text-lg lg:text-xl font-bold">Nutrition</h2>
               </div>
-              <span className="badge bg-orange-500/20 text-orange-400">
+              <span className="badge bg-orange-500/20 text-orange-400 text-xs">
                 {completedNutrition}/{nutrition.length}
               </span>
             </div>
@@ -324,23 +327,23 @@ export default function DailyBriefing() {
                 <button
                   key={index}
                   onClick={() => toggleNutritionItem(index)}
-                  className={`w-full text-left p-3 rounded-lg border transition-all ${
+                  className={`w-full text-left p-2 lg:p-3 rounded-lg border transition-all ${
                     meal.completed 
                       ? 'bg-green-500/10 border-green-500/30' 
                       : 'bg-dark-700/50 border-dark-600 hover:border-orange-500/30'
                   }`}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-2 lg:gap-3">
                     {meal.completed ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-400 mt-0.5" />
+                      <CheckCircle2 className="w-4 h-4 lg:w-5 lg:h-5 text-green-400 mt-0.5 flex-shrink-0" />
                     ) : (
-                      <Circle className="w-5 h-5 text-gray-500 mt-0.5" />
+                      <Circle className="w-4 h-4 lg:w-5 lg:h-5 text-gray-500 mt-0.5 flex-shrink-0" />
                     )}
-                    <div className="flex-1">
-                      <p className={`font-medium ${meal.completed ? 'text-green-400' : ''}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium text-sm ${meal.completed ? 'text-green-400' : ''}`}>
                         {meal.time}
                       </p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-xs text-gray-400">
                         {meal.items.join(', ')}
                       </p>
                     </div>
@@ -357,8 +360,8 @@ export default function DailyBriefing() {
             transition={{ delay: 0.3 }}
             className="card"
           >
-            <h3 className="font-bold mb-3 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-yellow-400" />
+            <h3 className="font-bold mb-3 flex items-center gap-2 text-sm lg:text-base">
+              <Zap className="w-4 h-4 lg:w-5 lg:h-5 text-yellow-400" />
               Supplements
             </h3>
             <div className="space-y-2">
@@ -366,17 +369,17 @@ export default function DailyBriefing() {
                 <button
                   key={index}
                   onClick={() => toggleSupplement(index)}
-                  className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all ${
+                  className={`w-full flex items-center gap-2 lg:gap-3 p-2 rounded-lg transition-all ${
                     supp.completed ? 'bg-green-500/10' : 'hover:bg-dark-700'
                   }`}
                 >
                   {supp.completed ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    <CheckCircle2 className="w-4 h-4 lg:w-5 lg:h-5 text-green-400 flex-shrink-0" />
                   ) : (
-                    <Circle className="w-5 h-5 text-gray-500" />
+                    <Circle className="w-4 h-4 lg:w-5 lg:h-5 text-gray-500 flex-shrink-0" />
                   )}
-                  <div className="flex-1 text-left">
-                    <p className={`font-medium ${supp.completed ? 'text-green-400' : ''}`}>
+                  <div className="flex-1 text-left min-w-0">
+                    <p className={`font-medium text-sm ${supp.completed ? 'text-green-400' : ''}`}>
                       {supp.name}
                     </p>
                     <p className="text-xs text-gray-400">{supp.timing}</p>
@@ -388,7 +391,7 @@ export default function DailyBriefing() {
         </div>
 
         {/* Right Column - Workflow & Focus */}
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Workflow Blocks */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -396,40 +399,40 @@ export default function DailyBriefing() {
             transition={{ delay: 0.2 }}
             className="card border-t-4 border-t-purple-500"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <Clock className="w-6 h-6 text-purple-400" />
-              <h2 className="text-xl font-bold">Workflow Blocks</h2>
+            <div className="flex items-center gap-2 lg:gap-3 mb-4">
+              <Clock className="w-5 h-5 lg:w-6 lg:h-6 text-purple-400" />
+              <h2 className="text-lg lg:text-xl font-bold">Workflow Blocks</h2>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               <div>
-                <label className="text-sm text-gray-400 mb-1 block">Morning Block (8am-12pm)</label>
+                <label className="text-xs lg:text-sm text-gray-400 mb-1 block">Morning Block (8am-12pm)</label>
                 <input
                   type="text"
                   value={workflowBlocks.morning}
                   onChange={(e) => setWorkflowBlocks(prev => ({ ...prev, morning: e.target.value }))}
                   placeholder="Primary focus..."
-                  className="w-full input"
+                  className="w-full input text-sm"
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-400 mb-1 block">Afternoon Block (12pm-4pm)</label>
+                <label className="text-xs lg:text-sm text-gray-400 mb-1 block">Afternoon Block (12pm-4pm)</label>
                 <input
                   type="text"
                   value={workflowBlocks.afternoon}
                   onChange={(e) => setWorkflowBlocks(prev => ({ ...prev, afternoon: e.target.value }))}
                   placeholder="Primary focus..."
-                  className="w-full input"
+                  className="w-full input text-sm"
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-400 mb-1 block">Evening Block (4pm-8pm)</label>
+                <label className="text-xs lg:text-sm text-gray-400 mb-1 block">Evening Block (4pm-8pm)</label>
                 <input
                   type="text"
                   value={workflowBlocks.evening}
                   onChange={(e) => setWorkflowBlocks(prev => ({ ...prev, evening: e.target.value }))}
                   placeholder="Primary focus..."
-                  className="w-full input"
+                  className="w-full input text-sm"
                 />
               </div>
             </div>
@@ -442,14 +445,14 @@ export default function DailyBriefing() {
             transition={{ delay: 0.3 }}
             className="card border-t-4 border-t-red-500"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle className="w-6 h-6 text-red-400" />
-              <h2 className="text-xl font-bold">Avoid Today</h2>
+            <div className="flex items-center gap-2 lg:gap-3 mb-4">
+              <AlertTriangle className="w-5 h-5 lg:w-6 lg:h-6 text-red-400" />
+              <h2 className="text-lg lg:text-xl font-bold">Avoid Today</h2>
             </div>
             <select
               value={distractionToAvoid}
               onChange={(e) => setDistractionToAvoid(e.target.value)}
-              className="w-full input"
+              className="w-full input text-sm"
             >
               <option value="">Select distraction to avoid...</option>
               {DISTRACTIONS.map((d) => (
@@ -457,8 +460,8 @@ export default function DailyBriefing() {
               ))}
             </select>
             {distractionToAvoid && (
-              <div className="mt-4 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
-                <p className="text-red-400 font-medium text-center">{distractionToAvoid}</p>
+              <div className="mt-4 p-3 lg:p-4 bg-red-500/10 rounded-lg border border-red-500/30">
+                <p className="text-red-400 font-medium text-center text-sm">{distractionToAvoid}</p>
               </div>
             )}
           </motion.div>
@@ -470,24 +473,24 @@ export default function DailyBriefing() {
             transition={{ delay: 0.4 }}
             className="card"
           >
-            <h3 className="font-bold mb-3 flex items-center gap-2">
-              <span className="text-xl">💧</span>
+            <h3 className="font-bold mb-3 flex items-center gap-2 text-sm lg:text-base">
+              <span className="text-lg lg:text-xl">💧</span>
               Hydration Log
             </h3>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-400">Check 2-3x daily</span>
-              <span className="badge bg-blue-500/20 text-blue-400">{hydrationCount} checks</span>
+              <span className="text-xs lg:text-sm text-gray-400">Check 2-3x daily</span>
+              <span className="badge bg-blue-500/20 text-blue-400 text-xs">{hydrationCount} checks</span>
             </div>
             <div className="flex gap-2">
               <button 
                 onClick={() => setHydrationCount(prev => Math.max(0, prev - 1))}
-                className="btn-secondary flex-1"
+                className="btn-secondary flex-1 touch-target"
               >
-                -
+                <Minus className="w-4 h-4 mx-auto" />
               </button>
               <button 
                 onClick={() => setHydrationCount(prev => prev + 1)}
-                className="btn-primary flex-1"
+                className="btn-primary flex-1 touch-target"
               >
                 Log Check
               </button>
@@ -501,8 +504,8 @@ export default function DailyBriefing() {
             transition={{ delay: 0.5 }}
             className="card"
           >
-            <h3 className="font-bold mb-3 flex items-center gap-2">
-              <Brain className="w-5 h-5 text-pink-400" />
+            <h3 className="font-bold mb-3 flex items-center gap-2 text-sm lg:text-base">
+              <Brain className="w-4 h-4 lg:w-5 lg:h-5 text-pink-400" />
               Health Drinks
             </h3>
             <div className="space-y-2">
@@ -510,16 +513,16 @@ export default function DailyBriefing() {
                 <button
                   key={index}
                   onClick={() => toggleHealthDrink(index)}
-                  className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all ${
+                  className={`w-full flex items-center gap-2 lg:gap-3 p-2 rounded-lg transition-all ${
                     drink.completed ? 'bg-green-500/10' : 'hover:bg-dark-700'
                   }`}
                 >
                   {drink.completed ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    <CheckCircle2 className="w-4 h-4 lg:w-5 lg:h-5 text-green-400 flex-shrink-0" />
                   ) : (
-                    <Circle className="w-5 h-5 text-gray-500" />
+                    <Circle className="w-4 h-4 lg:w-5 lg:h-5 text-gray-500 flex-shrink-0" />
                   )}
-                  <span className={`flex-1 text-left ${drink.completed ? 'text-green-400' : ''}`}>
+                  <span className={`flex-1 text-left text-sm ${drink.completed ? 'text-green-400' : ''}`}>
                     {drink.name}
                   </span>
                 </button>
