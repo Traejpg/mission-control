@@ -26,6 +26,8 @@ interface FileWatcherState {
 // Use environment variable for cloud deployment, fallback to localhost for local dev
 const WATCHER_URL = import.meta.env.VITE_WATCHER_URL || 'wss://mission-control-v954.onrender.com/ws';
 
+console.log('[FileWatcher] Connecting to:', WATCHER_URL);
+
 export function useFileWatcher(): FileWatcherState & {
   refresh: () => void;
   writeFile: (date: string, content: string) => Promise<boolean>;
@@ -46,11 +48,14 @@ export function useFileWatcher(): FileWatcherState & {
 
   // Connect to file watcher
   useEffect(() => {
+    let reconnectTimer: NodeJS.Timeout;
+    
     const connect = () => {
+      console.log('[FileWatcher] Attempting connection...');
       const socket = new WebSocket(WATCHER_URL);
       
       socket.onopen = () => {
-        console.log('[FileWatcher] Connected');
+        console.log('[FileWatcher] Connected successfully');
         setState(prev => ({ ...prev, isConnected: true }));
         
         // Subscribe to channels
@@ -63,21 +68,22 @@ export function useFileWatcher(): FileWatcherState & {
       socket.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
+          console.log('[FileWatcher] Received:', message.type);
           handleMessage(message);
         } catch (error) {
           console.error('[FileWatcher] Parse error:', error);
         }
       };
       
-      socket.onclose = () => {
-        console.log('[FileWatcher] Disconnected');
+      socket.onclose = (event) => {
+        console.log('[FileWatcher] Disconnected. Code:', event.code, 'Reason:', event.reason);
         setState(prev => ({ ...prev, isConnected: false }));
         // Auto-reconnect after 3 seconds
-        setTimeout(connect, 3000);
+        reconnectTimer = setTimeout(connect, 3000);
       };
       
       socket.onerror = (error) => {
-        console.error('[FileWatcher] Error:', error);
+        console.error('[FileWatcher] WebSocket error:', error);
       };
       
       setWs(socket);
@@ -86,6 +92,7 @@ export function useFileWatcher(): FileWatcherState & {
     connect();
     
     return () => {
+      clearTimeout(reconnectTimer);
       ws?.close();
     };
   }, []);
