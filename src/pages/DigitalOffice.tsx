@@ -35,6 +35,38 @@ export default function DigitalOffice() {
 
   const getMemberById = (id: string) => teamMembers.find(m => m.id === id);
 
+  // Derive agent status from real tasks
+  const getAgentStatus = (agentId: string): 'online' | 'busy' | 'idle' | 'offline' => {
+    const agentTasks = tasks.filter(t => t.assignee?.toLowerCase() === agentId.toLowerCase());
+    if (agentTasks.length === 0) return 'offline';
+    const hasInProgress = agentTasks.some(t => t.status === 'in-progress');
+    const hasTodo = agentTasks.some(t => t.status === 'todo');
+    if (hasInProgress) return 'busy';
+    if (hasTodo) return 'idle';
+    return 'online';
+  };
+
+  // Get current task for agent
+  const getAgentCurrentTask = (agentId: string): string | undefined => {
+    const agentTasks = tasks.filter(t => 
+      t.assignee?.toLowerCase() === agentId.toLowerCase() && 
+      t.status !== 'done'
+    );
+    if (agentTasks.length === 0) return undefined;
+    // Return first in-progress task, or first todo task
+    const inProgress = agentTasks.find(t => t.status === 'in-progress');
+    if (inProgress) return inProgress.title;
+    return agentTasks[0]?.title;
+  };
+
+  // Calculate workload percentage
+  const getAgentWorkload = (agentId: string): number => {
+    const agentTasks = tasks.filter(t => t.assignee?.toLowerCase() === agentId.toLowerCase());
+    if (agentTasks.length === 0) return 0;
+    const activeTasks = agentTasks.filter(t => t.status !== 'done').length;
+    return Math.min(100, Math.round((activeTasks / Math.max(1, agentTasks.length)) * 100));
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -102,6 +134,11 @@ export default function DigitalOffice() {
 
           const isSelected = selectedAgent === station.id;
           const isTee = station.id === 'ceo';
+          
+          // Get real status from tasks
+          const realStatus = isTee ? 'online' : getAgentStatus(station.id);
+          const realCurrentTask = isTee ? undefined : getAgentCurrentTask(station.id);
+          const realWorkload = isTee ? 0 : getAgentWorkload(station.id);
 
           return (
             <motion.div
@@ -130,8 +167,8 @@ export default function DigitalOffice() {
                 <div className="p-3 h-full flex flex-col">
                   {/* Status Indicator */}
                   <div className="flex items-center justify-between mb-2">
-                    <div className={`w-3 h-3 rounded-full ${statusColors[member?.status || 'offline']} animate-pulse`}></div>
-                    {member?.currentTask && (
+                    <div className={`w-3 h-3 rounded-full ${statusColors[realStatus]} animate-pulse`}></div>
+                    {realCurrentTask && (
                       <Activity className="w-4 h-4 text-brand-400 animate-pulse" />
                     )}
                   </div>
@@ -140,26 +177,26 @@ export default function DigitalOffice() {
                   <div className="flex-1 flex flex-col items-center justify-center">
                     <div className="text-3xl mb-1">{isTee ? '👤' : member?.avatar}</div>
                     <p className="font-bold text-sm text-center">{station.label}</p>
-                    {!isTee && member && (
+                    {!isTee && (
                       <p className="text-xs text-gray-400 text-center truncate w-full">
-                        {member.workload > 0 ? `${member.workload}% workload` : 'Available'}
+                        {realWorkload > 0 ? `${realWorkload}% workload` : 'Available'}
                       </p>
                     )}
                   </div>
 
                   {/* Computer Screen Effect */}
-                  {member?.currentTask && (
+                  {realCurrentTask && (
                     <div className="mt-2 h-8 bg-dark-800 rounded border border-dark-600 overflow-hidden">
                       <div className="h-full bg-brand-500/20 animate-pulse flex items-center px-2">
-                        <span className="text-xs truncate">{member.currentTask}</span>
+                        <span className="text-xs truncate">{realCurrentTask}</span>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Connection Lines (for online agents) */}
-              {member?.status === 'online' && station.id !== 'ceo' && (
+              {/* Connection Lines (for online/busy agents) */}
+              {(realStatus === 'online' || realStatus === 'busy') && station.id !== 'ceo' && (
                 <svg 
                   className="absolute pointer-events-none"
                   style={{
@@ -210,13 +247,20 @@ export default function DigitalOffice() {
               <div>
                 <h3 className="text-xl font-bold">Tee</h3>
                 <p className="text-gray-400">CEO & Founder</p>
-                <p className="text-sm text-brand-400 mt-1">Currently working on TrackGiant</p>
+                <p className="text-sm text-brand-400 mt-1">{tasks.filter(t => t.assignee === 'tee').length} assigned tasks</p>
               </div>
             </div>
           ) : (
             (() => {
               const member = getMemberById(selectedAgent);
               if (!member) return null;
+              
+              // Get real data for selected agent
+              const agentTasks = tasks.filter(t => t.assignee?.toLowerCase() === selectedAgent.toLowerCase());
+              const realStatus = getAgentStatus(selectedAgent);
+              const realCurrentTask = getAgentCurrentTask(selectedAgent);
+              const realWorkload = getAgentWorkload(selectedAgent);
+              
               return (
                 <div className="flex items-start gap-4">
                   <div className="w-16 h-16 bg-dark-700 rounded-full flex items-center justify-center text-3xl">
@@ -226,23 +270,46 @@ export default function DigitalOffice() {
                     <div className="flex items-center gap-3">
                       <h3 className="text-xl font-bold">{member.name}</h3>
                       <span className={`badge ${
-                        member.status === 'online' ? 'bg-green-500/20 text-green-400' :
-                        member.status === 'busy' ? 'bg-red-500/20 text-red-400' :
-                        member.status === 'idle' ? 'bg-yellow-500/20 text-yellow-400' :
+                        realStatus === 'online' ? 'bg-green-500/20 text-green-400' :
+                        realStatus === 'busy' ? 'bg-red-500/20 text-red-400' :
+                        realStatus === 'idle' ? 'bg-yellow-500/20 text-yellow-400' :
                         'bg-gray-500/20 text-gray-400'
                       }`}>
-                        {member.status}
+                        {realStatus}
                       </span>
                     </div>
                     <p className="text-gray-400">{member.role}</p>
+                    <p className="text-sm text-gray-500 mt-1">{agentTasks.length} total tasks • {realWorkload}% workload</p>
                     
-                    {member.currentTask ? (
+                    {realCurrentTask ? (
                       <div className="mt-3 p-3 bg-brand-500/10 rounded-lg border border-brand-500/20">
                         <p className="text-sm text-gray-400">Current Task</p>
-                        <p className="font-medium">{member.currentTask}</p>
+                        <p className="font-medium">{realCurrentTask}</p>
                       </div>
                     ) : (
                       <p className="mt-3 text-gray-400">No active task - Available for assignment</p>
+                    )}
+
+                    {/* Show agent's tasks list */}
+                    {agentTasks.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-sm text-gray-400">Assigned Tasks:</p>
+                        {agentTasks.slice(0, 5).map(task => (
+                          <div key={task.id} className="flex items-center gap-2 text-sm">
+                            <span className={`w-2 h-2 rounded-full ${
+                              task.status === 'done' ? 'bg-green-400' :
+                              task.status === 'in-progress' ? 'bg-yellow-400' :
+                              'bg-gray-400'
+                            }`} />
+                            <span className={task.status === 'done' ? 'line-through text-gray-500' : ''}>
+                              {task.title}
+                            </span>
+                          </div>
+                        ))}
+                        {agentTasks.length > 5 && (
+                          <p className="text-xs text-gray-500">+{agentTasks.length - 5} more tasks</p>
+                        )}
+                      </div>
                     )}
 
                     <div className="mt-3 flex flex-wrap gap-2">
