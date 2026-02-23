@@ -24,7 +24,7 @@ interface FileWatcherState {
 }
 
 // Use environment variable with fallback to production Railway backend
-const WATCHER_URL = import.meta.env.VITE_WATCHER_URL || 'wss://mission-control.railway.internal/ws';
+const WATCHER_URL = import.meta.env.VITE_WATCHER_URL || 'wss://mission-control-production-8f3a.up.railway.app/ws';
 
 console.log('[FileWatcher] Connecting to:', WATCHER_URL);
 

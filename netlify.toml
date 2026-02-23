@@ -4,8 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
-  VITE_WATCHER_URL = "wss://mission-control.railway.internal/ws"
-  VITE_GATEWAY_URL = "wss://mission-control.railway.internal"
+  VITE_WATCHER_URL = "wss://mission-control-production-8f3a.up.railway.app/ws"
+  VITE_GATEWAY_URL = "wss://mission-control-production-8f3a.up.railway.app"
 
 [[redirects]]
   from = "/*"
