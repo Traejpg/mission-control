@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Simple in-memory store for Render - no disk dependency
+ * Simple in-memory store for Render - with markdown parsing
  */
 
 import http from 'http';
@@ -19,6 +19,108 @@ const CORS = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
+
+// ==================== PARSING FUNCTIONS ====================
+
+function parseTasks(content) {
+  const tasks = [];
+  const lines = content.split('\n');
+  let taskId = 0;
+
+  for (const line of lines) {
+    const match = line.match(/^- \[([ x])\]\s*(.+)/);
+    if (match) {
+      const isDone = match[1] === 'x';
+      const title = match[2].replace(/\*\*/g, '').trim();
+      
+      let priority = 'medium';
+      if (title.includes('CRITICAL')) priority = 'critical';
+      else if (title.includes('HIGH')) priority = 'high';
+      else if (title.includes('LOW')) priority = 'low';
+
+      tasks.push({
+        id: `task-${taskId++}`,
+        title: title.replace(/\[(CRITICAL|HIGH|MEDIUM|LOW)\]\s*/i, ''),
+        status: isDone ? 'done' : 'todo',
+        priority,
+        description: '',
+        assignee: 'robin',
+        workflow: 'personal',
+        tags: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      });
+    }
+  }
+
+  return tasks;
+}
+
+function parseMemories(content, source) {
+  const memories = [];
+  const lines = content.split('\n');
+  let currentMemory = null;
+  let memoryContent = [];
+
+  for (const line of lines) {
+    if (line.match(/^#{2,3}\s+/)) {
+      if (currentMemory && currentMemory.title) {
+        memories.push({
+          ...currentMemory,
+          content: memoryContent.join('\n').trim()
+        });
+      }
+
+      currentMemory = {
+        id: `mem-${source}-${memories.length}`,
+        title: line.replace(/^#{2,3}\s+/, ''),
+        category: 'general',
+        date: new Date(source).toISOString(),
+        tags: [],
+        source
+      };
+      memoryContent = [];
+    } else if (currentMemory) {
+      if (line.toLowerCase().includes('category:')) {
+        const catMatch = line.match(/category:\s*(.+)/i);
+        if (catMatch) currentMemory.category = catMatch[1].trim();
+      }
+      
+      if (line.toLowerCase().includes('tags:')) {
+        const tagMatch = line.match(/tags?:\s*(.+)/i);
+        if (tagMatch) {
+          currentMemory.tags = tagMatch[1].split(',').map(t => t.trim().toLowerCase());
+        }
+      }
+      
+      memoryContent.push(line);
+    }
+  }
+
+  if (currentMemory && currentMemory.title) {
+    memories.push({
+      ...currentMemory,
+      content: memoryContent.join('\n').trim()
+    });
+  }
+
+  return memories;
+}
+
+function processFile(date, data) {
+  return {
+    id: date,
+    date,
+    name: `${date}.md`,
+    content: data.content,
+    lastModified: data.lastModified,
+    size: data.content.length,
+    tasks: parseTasks(data.content),
+    memories: parseMemories(data.content, date)
+  };
+}
+
+// ==================== HTTP SERVER ====================
 
 const server = http.createServer((req, res) => {
   Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
@@ -44,14 +146,9 @@ const server = http.createServer((req, res) => {
   
   // List files
   if (parsed.pathname === '/api/memory' && req.method === 'GET') {
-    const files = Array.from(memoryStore.entries()).map(([date, data]) => ({
-      id: date,
-      date,
-      name: `${date}.md`,
-      size: data.content.length,
-      lastModified: data.lastModified,
-      content: data.content
-    })).sort((a, b) => b.date.localeCompare(a.date));
+    const files = Array.from(memoryStore.entries())
+      .map(([date, data]) => processFile(date, data))
+      .sort((a, b) => b.date.localeCompare(a.date));
     
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ files }));
@@ -74,9 +171,10 @@ const server = http.createServer((req, res) => {
         memoryStore.set(date, { content, lastModified: Date.now() });
         
         // Notify WebSocket clients
+        const processed = processFile(date, { content, lastModified: Date.now() });
         broadcast({
-          type: 'memory_update',
-          payload: { date, lastModified: Date.now() }
+          type: 'file_change',
+          payload: { file: processed }
         });
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -93,7 +191,8 @@ const server = http.createServer((req, res) => {
   res.end('Not found');
 });
 
-// WebSocket
+// ==================== WEBSOCKET ====================
+
 const wss = new WebSocketServer({ server, path: '/ws' });
 
 wss.on('connection', (ws) => {
@@ -102,21 +201,15 @@ wss.on('connection', (ws) => {
   
   console.log(`[WS] Client ${id} connected (${clients.size} total)`);
   
-  // Send current files (in format frontend expects)
-  const files = Array.from(memoryStore.entries()).map(([date, data]) => ({
-    id: date,
-    date,
-    name: `${date}.md`,
-    content: data.content,
-    lastModified: data.lastModified,
-    size: data.content.length,
-    tasks: [],
-    memories: []
-  }));
+  // Send current files (parsed)
+  const files = Array.from(memoryStore.entries())
+    .map(([date, data]) => processFile(date, data));
   
-  // Send both formats that frontend expects
+  // All memories flattened
+  const allMemories = files.flatMap(f => f.memories);
+  
   ws.send(JSON.stringify({ type: 'files', payload: { files } }));
-  ws.send(JSON.stringify({ type: 'memories', payload: { memories: files } }));
+  ws.send(JSON.stringify({ type: 'memories', payload: { memories: allMemories } }));
   
   ws.on('message', (data) => {
     try {
@@ -128,25 +221,25 @@ wss.on('connection', (ws) => {
       
       if (msg.type === 'write_file') {
         memoryStore.set(msg.date, { content: msg.content, lastModified: Date.now() });
+        const processed = processFile(msg.date, { content: msg.content, lastModified: Date.now() });
         ws.send(JSON.stringify({ type: 'write_complete' }));
         broadcast({
-          type: 'memory_update',
-          payload: { date: msg.date, lastModified: Date.now() }
+          type: 'file_change',
+          payload: { file: processed }
         });
       }
       
       if (msg.type === 'request' && msg.resource === 'memory') {
-        const files = Array.from(memoryStore.entries()).map(([date, data]) => ({
-          id: date, date, name: `${date}.md`, content: data.content, lastModified: data.lastModified, size: data.content.length, tasks: [], memories: []
-        }));
+        const files = Array.from(memoryStore.entries())
+          .map(([date, data]) => processFile(date, data));
+        const allMemories = files.flatMap(f => f.memories);
         ws.send(JSON.stringify({ type: 'files', payload: { files } }));
-        ws.send(JSON.stringify({ type: 'memories', payload: { memories: files } }));
+        ws.send(JSON.stringify({ type: 'memories', payload: { memories: allMemories } }));
       }
       
       if (msg.type === 'request' && msg.resource === 'files') {
-        const files = Array.from(memoryStore.entries()).map(([date, data]) => ({
-          id: date, date, name: `${date}.md`, content: data.content, lastModified: data.lastModified, size: data.content.length, tasks: [], memories: []
-        }));
+        const files = Array.from(memoryStore.entries())
+          .map(([date, data]) => processFile(date, data));
         ws.send(JSON.stringify({ type: 'files', payload: { files } }));
       }
     } catch (err) {
@@ -163,7 +256,7 @@ wss.on('connection', (ws) => {
 function broadcast(msg) {
   const data = JSON.stringify(msg);
   clients.forEach((ws) => {
-    if (ws.readyState === 1) ws.send(data); // 1 = OPEN
+    if (ws.readyState === 1) ws.send(data);
   });
 }
 
