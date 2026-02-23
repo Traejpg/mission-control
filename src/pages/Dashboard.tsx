@@ -15,7 +15,8 @@ import {
   Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { workflows, tasks, achievements, teamMembers } from '../data/store';
+import { workflows, achievements, teamMembers } from '../data/store';
+import { useFileWatcher } from '../hooks/useFileWatcher';
 import { 
   useWebSocketConnection, 
   useWebSocketSessions,
@@ -54,14 +55,20 @@ export default function Dashboard() {
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [showQuickActions, setShowQuickActions] = useState(false);
   
-  // WebSocket connection
-  const { isConnected } = useWebSocketConnection();
+  // File watcher for real tasks/data
+  const { tasks, files, isConnected: fileWatcherConnected } = useFileWatcher();
+  
+  // WebSocket connection for live sessions
+  const { isConnected: gatewayConnected } = useWebSocketConnection();
   const sessions = useWebSocketSessions();
+  
+  // Combined connection status
+  const isConnected = fileWatcherConnected;
 
-  // Update last update time when sessions change
+  // Update last update time when files/tasks change
   useEffect(() => {
     setLastUpdate(Date.now());
-  }, [sessions]);
+  }, [files, tasks]);
 
   // Clock timer
   useEffect(() => {
@@ -69,14 +76,14 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  // Calculate live stats
+  // Calculate live stats from real data
   const activeAgents = deriveActiveAgents(sessions);
   const activeSubagents = activeAgents.length;
   
   const stats = {
     totalTasks: tasks.length,
     completedToday: tasks.filter(t => t.status === 'done').length,
-    inProgress: activeSubagents,
+    inProgress: tasks.filter(t => t.status === 'in-progress' || t.status === 'todo').length,
     critical: tasks.filter(t => t.priority === 'critical' && t.status !== 'done').length,
   };
 
@@ -440,8 +447,8 @@ export default function Dashboard() {
             )}
           </div>
           <div className="text-right text-xs text-gray-500">
-            <p className="hidden sm:block">{import.meta.env.VITE_GATEWAY_URL || 'ws://127.0.0.1:18789'}</p>
-            <p>{sessions.length} sessions</p>
+            <p className="hidden sm:block">{import.meta.env.VITE_WATCHER_URL || 'wss://mission-control-production-8f3a.up.railway.app/ws'}</p>
+            <p>{tasks.length} tasks • {files.length} files</p>
           </div>
         </div>
       </div>
