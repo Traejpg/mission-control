@@ -1,22 +1,22 @@
 # Railway Deployment Configuration
-# Deploys Unified Gateway + File Watcher to Railway.app
+# Mission Control Backend with Persistent Storage
 
 [build]
 builder = "nixpacks"
 
 [deploy]
-startCommand = "node unified-gateway.cjs"
+startCommand = "node server.cjs"
 healthcheckPath = "/health"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
 
-[environments]
-production = true
+# Persistent volume for memory files
+[[mounts]]
+name = "memory-data"
+path = "/data/memory"
 
 [variables]
 NODE_ENV = "production"
-GATEWAY_PORT = "${PORT}"
-GATEWAY_INTERNAL_PORT = "${PORT}"
-MEMORY_DIR = "/app/data/memory"
-CORS_ORIGIN = "*"
+PORT = "${PORT}"
+MEMORY_DIR = "/data/memory"

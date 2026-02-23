@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Monitor, Coffee, MessageSquare, Zap, Activity } from 'lucide-react';
+import { Monitor, Coffee, MessageSquare, Zap, Activity, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { teamMembers } from '../data/store';
+import { useFileWatcher } from '../hooks/useFileWatcher';
 
 const officeLayout = [
   { id: 'ceo', x: 50, y: 20, type: 'office', label: "Tee's Office" },
@@ -25,6 +26,7 @@ const statusColors = {
 export default function DigitalOffice() {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [time, setTime] = useState(new Date());
+  const { isConnected, refresh, files, tasks } = useFileWatcher();
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -38,14 +40,39 @@ export default function DigitalOffice() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Monitor className="w-8 h-8 text-brand-400" />
-            Digital Office
-          </h1>
-          <p className="text-gray-400 mt-1">Live view of team activity and workspace</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Monitor className="w-8 h-8 text-brand-400" />
+              Digital Office
+            </h1>
+            <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+              isConnected
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+            }`}>
+              {isConnected ? (
+                <><Wifi className="w-3 h-3" /> LIVE</>
+              ) : (
+                <><WifiOff className="w-3 h-3" /> OFFLINE</>
+              )}
+            </span>
+          </div>
+          <p className="text-gray-400 mt-1">
+            Live view of team activity and workspace
+            {isConnected && ` • ${files.length} files synced`}
+          </p>
         </div>
-        <div className="glass px-4 py-2 rounded-lg">
-          <span className="font-mono text-xl">{time.toLocaleTimeString()}</span>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={refresh}
+            disabled={!isConnected}
+            className="p-2 hover:bg-dark-700 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-5 h-5 text-gray-400 ${!isConnected ? '' : 'hover:text-brand-400'}`} />
+          </button>
+          <div className="glass px-4 py-2 rounded-lg">
+            <span className="font-mono text-xl">{time.toLocaleTimeString()}</span>
+          </div>
         </div>
       </div>
 
@@ -240,21 +267,30 @@ export default function DigitalOffice() {
             <Zap className="w-5 h-5 text-yellow-400" />
             Live Activity
           </h3>
-          <div className="space-y-3">
-            {teamMembers
-              .filter(m => m.currentTask)
-              .map(member => (
-                <div key={member.id} className="flex items-center gap-3 p-2 bg-dark-700/50 rounded-lg">
-                  <span className="text-xl">{member.avatar}</span>
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{member.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{member.currentTask}</p>
+          <div className="space-y-3 max-h-[200px] overflow-y-auto">
+            {isConnected ? (
+              tasks.length > 0 ? (
+                tasks.slice(0, 10).map(task => (
+                  <div key={task.id} className="flex items-center gap-3 p-2 bg-dark-700/50 rounded-lg">
+                    <span className="text-xl">
+                      {task.assignee === 'tee' ? '👤' : 
+                       task.assignee === 'robin' ? '🤖' : '👥'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{task.title}</p>
+                      <p className="text-xs text-gray-400 truncate">{task.status} • {task.priority}</p>
+                    </div>
+                    <Activity className={`w-4 h-4 ${task.status === 'in-progress' ? 'text-green-400 animate-pulse' : 'text-gray-500'}`} />
                   </div>
-                  <Activity className="w-4 h-4 text-green-400 animate-pulse" />
-                </div>
-              ))}
-            {teamMembers.filter(m => m.currentTask).length === 0 && (
-              <p className="text-gray-400 text-center py-4">No active tasks</p>
+                ))
+              ) : (
+                <p className="text-gray-400 text-center py-4">No tasks from memory files</p>
+              )
+            ) : (
+              <p className="text-gray-400 text-center py-4">
+                <WifiOff className="w-5 h-5 mx-auto mb-2" />
+                Connect to see live tasks
+              </p>
             )}
           </div>
         </div>
@@ -266,20 +302,22 @@ export default function DigitalOffice() {
           </h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-2 bg-dark-700/50 rounded-lg">
-              <span className="text-sm">OpenClaw Gateway</span>
-              <span className="badge bg-green-500/20 text-green-400">Online</span>
+              <span className="text-sm">WebSocket Backend</span>
+              <span className={`badge ${isConnected ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                {isConnected ? 'Connected' : 'Disconnected'}
+              </span>
             </div>
             <div className="flex items-center justify-between p-2 bg-dark-700/50 rounded-lg">
-              <span className="text-sm">ElevenLabs API</span>
-              <span className="badge bg-green-500/20 text-green-400">Connected</span>
+              <span className="text-sm">Memory Files</span>
+              <span className="badge bg-blue-500/20 text-blue-400">{files.length} files</span>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-dark-700/50 rounded-lg">
+              <span className="text-sm">Active Tasks</span>
+              <span className="badge bg-purple-500/20 text-purple-400">{tasks.length} tasks</span>
             </div>
             <div className="flex items-center justify-between p-2 bg-dark-700/50 rounded-lg">
               <span className="text-sm">Netlify Hosting</span>
               <span className="badge bg-green-500/20 text-green-400">Operational</span>
-            </div>
-            <div className="flex items-center justify-between p-2 bg-dark-700/50 rounded-lg">
-              <span className="text-sm">AgentMail</span>
-              <span className="badge bg-green-500/20 text-green-400">Active</span>
             </div>
           </div>
         </div>

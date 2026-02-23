@@ -1,0 +1,11 @@
+# Nixpacks Configuration for Railway
+# Alternative to Dockerfile
+
+[phases.build]
+cmds = ["npm install --production"]
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[start]
+cmd = "node server.cjs"

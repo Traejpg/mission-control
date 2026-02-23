@@ -1,8 +1,13 @@
-// Ultra-simple Render server - robust date handling
+// Mission Control Backend Server - Railway Deployment
+// Supports persistent storage via mounted volume
+
 const http = require('http');
 const WebSocket = require('ws');
+const fs = require('fs');
+const path = require('path');
 
 const PORT = process.env.PORT || 10000;
+const MEMORY_DIR = process.env.MEMORY_DIR || '/data/memory';
 const memoryStore = new Map();
 
 const CORS = {
@@ -10,6 +15,62 @@ const CORS = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
+
+// Ensure memory directory exists
+function ensureMemoryDir() {
+  try {
+    if (!fs.existsSync(MEMORY_DIR)) {
+      fs.mkdirSync(MEMORY_DIR, { recursive: true });
+      console.log(`[FS] Created memory directory: ${MEMORY_DIR}`);
+    }
+  } catch (e) {
+    console.error(`[FS] Error creating memory directory: ${e.message}`);
+  }
+}
+
+// Load files from disk
+function loadFromDisk() {
+  try {
+    ensureMemoryDir();
+    const files = fs.readdirSync(MEMORY_DIR);
+    let loaded = 0;
+    
+    for (const file of files) {
+      if (file.endsWith('.md')) {
+        const date = file.replace('.md', '');
+        const filePath = path.join(MEMORY_DIR, file);
+        const stats = fs.statSync(filePath);
+        const content = fs.readFileSync(filePath, 'utf-8');
+        
+        memoryStore.set(date, {
+          content,
+          lastModified: stats.mtime.getTime()
+        });
+        loaded++;
+      }
+    }
+    
+    console.log(`[FS] Loaded ${loaded} files from ${MEMORY_DIR}`);
+    return loaded;
+  } catch (e) {
+    console.error(`[FS] Error loading from disk: ${e.message}`);
+    return 0;
+  }
+}
+
+// Save file to disk
+function saveToDisk(date, content) {
+  try {
+    ensureMemoryDir();
+    const filePath = path.join(MEMORY_DIR, `${date}.md`);
+    fs.writeFileSync(filePath, content, 'utf-8');
+    console.log(`[FS] Saved ${date}.md`);
+    return true;
+  } catch (e) {
+    console.error(`[FS] Error saving ${date}.md: ${e.message}`);
+    return false;
+  }
+}
 
 // Safe date formatter
 function safeDate(dateStr) {
@@ -101,7 +162,12 @@ const server = http.createServer((req, res) => {
   // Health
   if (url === '/health') {
     res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify({status: 'ok', files: memoryStore.size}));
+    res.end(JSON.stringify({
+      status: 'ok', 
+      files: memoryStore.size,
+      storage: MEMORY_DIR,
+      persistent: fs.existsSync(MEMORY_DIR)
+    }));
     return;
   }
 
@@ -138,9 +204,19 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({error: 'Missing date or content'}));
           return;
         }
-        memoryStore.set(date, {content, lastModified: Date.now()});
+        
+        const data = {content, lastModified: Date.now()};
+        memoryStore.set(date, data);
+        
+        // Persist to disk
+        const saved = saveToDisk(date, content);
+        
         res.writeHead(200, {'Content-Type': 'application/json'});
-        res.end(JSON.stringify({success: true, files: memoryStore.size}));
+        res.end(JSON.stringify({
+          success: true, 
+          files: memoryStore.size,
+          persisted: saved
+        }));
       } catch (e) {
         res.writeHead(500);
         res.end(JSON.stringify({error: e.message}));
@@ -188,11 +264,16 @@ wss.on('connection', (ws) => {
       const msg = JSON.parse(raw);
       
       if (msg.type === 'write_file' && msg.date && msg.content) {
-        memoryStore.set(msg.date, {content: msg.content, lastModified: Date.now()});
-        ws.send(JSON.stringify({type: 'write_complete'}));
+        const data = {content: msg.content, lastModified: Date.now()};
+        memoryStore.set(msg.date, data);
+        
+        // Persist to disk
+        const saved = saveToDisk(msg.date, msg.content);
+        
+        ws.send(JSON.stringify({type: 'write_complete', persisted: saved}));
         
         // Broadcast update
-        const file = makeFile(msg.date, {content: msg.content, lastModified: Date.now()});
+        const file = makeFile(msg.date, data);
         const broadcast = JSON.stringify({type: 'file_change', payload: {file}});
         wss.clients.forEach(c => {
           if (c.readyState === WebSocket.OPEN) c.send(broadcast);
@@ -213,6 +294,11 @@ wss.on('connection', (ws) => {
   ws.on('close', () => console.log('[WS] Client disconnected'));
 });
 
+// Load persisted data on startup
+const loaded = loadFromDisk();
+
 server.listen(PORT, () => {
-  console.log(`✅ Server on port ${PORT}, files: ${memoryStore.size}`);
+  console.log(`✅ Mission Control Server running on port ${PORT}`);
+  console.log(`📁 Memory storage: ${MEMORY_DIR} (${loaded} files loaded)`);
+  console.log(`🔌 WebSocket path: /ws`);
 });
